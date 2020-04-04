@@ -13,7 +13,7 @@ class CreateReviewsTable extends Migration
      */
     public function up()
     {
-        Schema::table('reviews', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id');
             $table->bigInteger('film_id');

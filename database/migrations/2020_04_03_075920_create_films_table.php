@@ -13,7 +13,7 @@ class CreateFilmsTable extends Migration
      */
     public function up()
     {
-        Schema::table('films', function (Blueprint $table) {
+        Schema::create('films', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('tmdb_id');
             $table->string('title');
