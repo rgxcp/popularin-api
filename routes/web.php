@@ -42,7 +42,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('user/{id}', 'UserController@show');
     $router->post('user/signin', 'UserController@signin');
     $router->post('user/signup', 'UserController@signup');
-    $router->post('user/signout', 'UserController@signout');
+    $router->post('user/signout/{id}', 'UserController@signout');
     $router->put('user/{id}', 'UserController@update');
     $router->delete('user/{id}', 'UserController@delete');
 
