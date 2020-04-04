@@ -17,7 +17,7 @@ class CreateFilmsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('tmdb_id')->unique();
             $table->string('title');
-            $table->date('year');
+            $table->year('year');
             $table->string('poster');
             $table->string('overview')->nullable();
             $table->bigInteger('contributor')->nullable();
