@@ -24,30 +24,30 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('user/{user_id}/favorites', 'FavoriteController@shows');
     $router->post('favorite', 'FavoriteController@create');
     $router->put('favorite/{id}', 'FavoriteController@update');
-    $router->delete('favorite/{id}', 'FavoriteController');
+    $router->delete('favorite/{id}', 'FavoriteController@delete');
 
     $router->get('film/{id}', 'FilmController@show');
     $router->get('films', 'FilmController@shows');
     $router->post('film', 'FilmController@create');
     $router->put('film/{id}', 'FilmController@update');
-    $router->delete('film/{id}', 'FilmController');
+    $router->delete('film/{id}', 'FilmController@delete');
 
     $router->get('film/{film_id}/review/{id}', 'ReviewController@showReview');
     $router->get('film/{film_id}/reviews', 'ReviewController@showReviews');
     $router->get('reviews', 'ReviewController@shows');
     $router->post('review', 'ReviewController@create');
     $router->put('review/{id}', 'ReviewController@update');
-    $router->delete('review/{id}', 'ReviewController');
+    $router->delete('review/{id}', 'ReviewController@delete');
 
     $router->get('user/{id}', 'UserController@show');
-    $router->post('user/signin', 'UserController@create');
-    $router->post('user/signup', 'UserController@create');
-    $router->post('user/signout', 'UserController@create');
+    $router->post('user/signin', 'UserController@signin');
+    $router->post('user/signup', 'UserController@signup');
+    $router->post('user/signout', 'UserController@signout');
     $router->put('user/{id}', 'UserController@update');
-    $router->delete('user/{id}', 'UserController');
+    $router->delete('user/{id}', 'UserController@delete');
 
     $router->get('user/{id}/watchlists', 'WatchlistController@shows');
     $router->post('watchlist', 'WatchlistController@create');
     $router->put('watchlist/{id}', 'WatchlistController@update');
-    $router->delete('watchlist/{id}', 'WatchlistController');
+    $router->delete('watchlist/{id}', 'WatchlistController@delete');
 });
