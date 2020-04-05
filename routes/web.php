@@ -23,7 +23,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('user/{user_id}/favorites', 'FavoriteController@shows');
     $router->post('favorite', 'FavoriteController@create');
-    $router->put('favorite/{id}', 'FavoriteController@update');
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
     $router->get('film/{id}', 'FilmController@show');
@@ -48,6 +47,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('user/{id}/watchlists', 'WatchlistController@shows');
     $router->post('watchlist', 'WatchlistController@create');
-    $router->put('watchlist/{id}', 'WatchlistController@update');
     $router->delete('watchlist/{id}', 'WatchlistController@delete');
 });
