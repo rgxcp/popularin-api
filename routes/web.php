@@ -19,7 +19,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('film/{film_id}/review/{review_id}/comments', 'CommentController@shows');
     $router->post('comment', 'CommentController@create');
     $router->put('comment/{id}', 'CommentController@update');
-    $router->delete('comment/{id}', 'CommentController@delete');
+    $router->put('comment/{id}', 'CommentController@delete');
 
     $router->get('user/{user_id}/favorites', 'FavoriteController@shows');
     $router->post('favorite', 'FavoriteController@create');
