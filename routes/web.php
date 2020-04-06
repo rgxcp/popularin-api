@@ -45,7 +45,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->put('user/{id}', 'UserController@update');
     $router->delete('user/{id}', 'UserController@delete');
 
-    $router->get('user/{id}/watchlists', 'WatchlistController@shows');
+    $router->get('user/{user_id}/watchlists', 'WatchlistController@shows');
     $router->post('watchlist', 'WatchlistController@create');
     $router->delete('watchlist/{id}', 'WatchlistController@delete');
 });
