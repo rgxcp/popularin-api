@@ -20,6 +20,7 @@ class CreateReviewsTable extends Migration
             $table->double('rating');
             $table->longText('review_text');
             $table->date('review_date');
+            $table->date('watch_date');
             $table->timestamps();
             $table->softDeletes();
         });
