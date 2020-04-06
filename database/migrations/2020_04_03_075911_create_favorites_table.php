@@ -18,7 +18,6 @@ class CreateFavoritesTable extends Migration
             $table->bigInteger('user_id');
             $table->bigInteger('tmdb_id')->unique();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

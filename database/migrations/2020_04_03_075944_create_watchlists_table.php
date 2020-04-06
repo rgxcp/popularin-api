@@ -16,9 +16,8 @@ class CreateWatchlistsTable extends Migration
         Schema::create('watchlists', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id');
-            $table->bigInteger('film_id');
+            $table->bigInteger('tmdb_id');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
