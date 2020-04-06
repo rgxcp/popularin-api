@@ -3,22 +3,25 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Favorite extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
-        // Empty
+        'user_id',
+        'tmdb_id'
     ];
 
-    protected $guarded = [
-        'user_id',
-        'film_id'
-    ];
+    /*
+     * protected $guarded = [
+     *     // Empty
+     * ];
+     */
 
     protected $hidden = [
         'deleted_at'
     ];
+
+    public function film() {
+        return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
+    }
 }

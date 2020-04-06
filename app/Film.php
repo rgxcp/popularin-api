@@ -10,19 +10,34 @@ class Film extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        // Empty
-    ];
-
-    protected $guarded = [
         'tmdb_id',
         'title',
-        'year',
+        'release_date',
         'poster',
         'overview',
         'contributor'
     ];
 
+    /*
+     * protected $guarded = [
+     *     // Empty
+     * ];
+     */
+
     protected $hidden = [
+        'contributor',
         'deleted_at'
     ];
+
+    public function contributor_info() {
+        return $this->belongsTo(User::class, 'contributor', 'id')->select([
+            'id',
+            'first_name',
+            'profile_picture'
+        ]);
+    }
+
+    public function total_reviews() {
+        return $this->hasMany(Review::class, 'tmdb_id', 'tmdb_id');
+    }
 }
