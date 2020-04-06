@@ -16,23 +16,23 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         return $router->app->version();
     });
 
-    $router->get('film/{film_id}/review/{review_id}/comments', 'CommentController@shows');
+    $router->get('review/{review_id}/comments', 'CommentController@shows');
     $router->post('comment', 'CommentController@create');
-    $router->put('comment/{id}', 'CommentController@update');
-    $router->put('comment/{id}', 'CommentController@delete');
+    $router->delete('comment/{id}', 'CommentController@delete');
 
     $router->get('user/{user_id}/favorites', 'FavoriteController@shows');
     $router->post('favorite', 'FavoriteController@create');
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
-    $router->get('film/{id}', 'FilmController@show');
+    $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->get('films', 'FilmController@shows');
     $router->post('film', 'FilmController@create');
-    $router->put('film/{id}', 'FilmController@update');
-    $router->delete('film/{id}', 'FilmController@delete');
+    $router->put('film/{tmdb_id}', 'FilmController@update');
+    $router->delete('film/{tmdb_id}', 'FilmController@delete');
 
-    $router->get('film/{film_id}/review/{id}', 'ReviewController@showReview');
-    $router->get('film/{film_id}/reviews', 'ReviewController@showReviews');
+    $router->get('film/{tmdb_id}/reviews', 'ReviewController@showFilmReviews');
+    $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
+    $router->get('review/{id}', 'ReviewController@show');
     $router->get('reviews', 'ReviewController@shows');
     $router->post('review', 'ReviewController@create');
     $router->put('review/{id}', 'ReviewController@update');
