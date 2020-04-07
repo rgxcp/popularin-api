@@ -12,7 +12,7 @@ class CommentController extends Controller
     public function shows($review_id) {
         $comments = Comment::with([
             'user'
-        ])->where('review_id', $review_id)->get();
+        ])->where('review_id', $review_id)->paginate(30);
 
         return response()
             ->json([

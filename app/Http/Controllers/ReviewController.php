@@ -25,7 +25,7 @@ class ReviewController extends Controller
     public function showFilmReviews($tmdb_id) {
         $reviews = Review::with([
             'user'
-        ])->where('tmdb_id', $tmdb_id)->get();
+        ])->where('tmdb_id', $tmdb_id)->paginate(30);
 
         return response()
             ->json([
@@ -38,7 +38,7 @@ class ReviewController extends Controller
     public function showUserReviews($user_id) {
         $reviews = Review::with([
             'film'
-        ])->where('user_id', $user_id)->get();
+        ])->where('user_id', $user_id)->paginate(30);
 
         return response()
             ->json([
@@ -51,7 +51,7 @@ class ReviewController extends Controller
     public function shows() {
         $reviews = Review::with([
             'film', 'user'
-        ])->orderBy('created_at', 'desc')->get();
+        ])->orderBy('created_at', 'desc')->paginate(30);
 
         return response()
             ->json([

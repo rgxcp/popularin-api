@@ -18,7 +18,7 @@ class WatchlistController extends Controller{
                     'film'
                 ])->where([
                     'user_id' => $request['user_id']
-                ])->get();
+                ])->paginate(30);
             
             return response()
                 ->json([

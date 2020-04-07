@@ -30,7 +30,7 @@ class FilmController extends Controller
     public function shows() {
         $films = Film::with([
             'contributor_info', 'total_reviews'
-        ])->get();
+        ])->paginate(30);
 
         return response()
             ->json([
