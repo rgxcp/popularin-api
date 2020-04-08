@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Favorite;
+use App\Film;
 use App\User;
 use Illuminate\Http\Request;
 
@@ -18,74 +19,81 @@ class FavoriteController extends Controller
                     'film'
                 ])->where([
                     'user_id' => $request['user_id']
-                ])->paginate(30);
+                ])->orderBy('created_at', 'desc')
+                  ->paginate(30);
             
             return response()
                 ->json([
-                    'status' => 201,
-                    'message' => 'Success',
+                    'status' => 101,
+                    'message' => 'Favorites Retrieved',
                     'results' => $favorites
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 404,
-                    'message' => 'Empty Favorites'
+                    'status' => 606,
+                    'message' => 'Favorites Not Found'
                 ]);
         }
     }
 
     public function create(Request $request) {
-        $match = User::select('token')
-            ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+        $auth = User::where([
+            'id' => $request['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
         
-        if ($match == true) {
-            Favorite::create($request->all());
+        if ($auth == true) {
+            Favorite::create([
+                'user_id' => $request['user_id'],
+                'tmdb_id' => $request['tmdb_id']
+            ]);
 
-            $is_film_exist = Film::select('tmdb_id')
+            $film_exist = Film::select('tmdb_id')
                 ->where([
                     'tmdb_id' => $request['tmdb_id']
                 ])->exists();
             
             return response()
                 ->json([
-                    'status' => 201,
-                    'is_film_exist' => $is_film_exist,
-                    'message' => 'Added to Favorite'
+                    'status' => 202,
+                    'message' => 'Favorite Added',
+                    'film_exist' => $film_exist
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Add Favorite'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $match = User::select('token')
+        $user_id = Favorite::select('user_id')
             ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             Favorite::findOrFail($id)
                 ->delete();
             
             return response()
                 ->json([
-                    'status' => 200,
-                    'message' => 'Deleted from Favorite'
+                    'status' => 404,
+                    'message' => 'Favorite Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Delete Favorite'
                 ]);
         }
     }

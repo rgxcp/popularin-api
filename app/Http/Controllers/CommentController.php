@@ -12,24 +12,26 @@ class CommentController extends Controller
     public function shows($review_id) {
         $comments = Comment::with([
             'user'
-        ])->where('review_id', $review_id)->paginate(30);
+        ])->where('review_id', $review_id)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
 
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'Comments Retrieved',
+                'total_comments' => Comment::where('review_id', $review_id)->count(),
                 'results' => $comments
             ]);
     }
 
     public function create(Request $request) {
-        $match = User::select('token')
-            ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+        $auth = User::where([
+            'id' => $request['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
         
-        if ($match == true) {
+        if ($auth == true) {
             Comment::create([
                 'user_id' => $request['user_id'],
                 'review_id' => $request['review_id'],
@@ -39,39 +41,43 @@ class CommentController extends Controller
 
             return response()
                 ->json([
-                    'status' => 201,
-                    'message' => 'Created'
+                    'status' => 202,
+                    'message' => 'Comment Created'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Create Comment'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $match = User::select('token')
+        $user_id = Comment::select('user_id')
             ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
+
+        $auth = User::where([
+            'id' => $user_id['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
         
-        if ($match == true) {
+        if ($auth == true) {
             Comment::findOrFail($id)
                 ->delete();
 
             return response()
                 ->json([
-                    'status' => 201,
-                    'message' => 'Deleted'
+                    'status' => 404,
+                    'message' => 'Comment Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Delete Comment'
                 ]);
         }
     }

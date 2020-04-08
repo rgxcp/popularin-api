@@ -17,11 +17,21 @@ class UserController extends Controller
 
         return response()
             ->json([
-                'status' => 200,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'User Retrieved',
                 'total_favorites' => Favorite::where('user_id', $id)->count(),
                 'total_reviews' => Review::where('user_id', $id)->count(),
                 'total_watchlists' => Watchlist::where('user_id', $id)->count(),
+                'rate_05' => Review::where('user_id', $id)->where('rating', 0.5)->count(),
+                'rate_10' => Review::where('user_id', $id)->where('rating', 1)->count(),
+                'rate_15' => Review::where('user_id', $id)->where('rating', 1.5)->count(),
+                'rate_20' => Review::where('user_id', $id)->where('rating', 2)->count(),
+                'rate_25' => Review::where('user_id', $id)->where('rating', 2.5)->count(),
+                'rate_30' => Review::where('user_id', $id)->where('rating', 3)->count(),
+                'rate_35' => Review::where('user_id', $id)->where('rating', 3.5)->count(),
+                'rate_40.' => Review::where('user_id', $id)->where('rating', 4)->count(),
+                'rate_45' => Review::where('user_id', $id)->where('rating', 4.5)->count(),
+                'rate_50' => Review::where('user_id', $id)->where('rating', 5)->count(),
                 'result' => $user
             ]);
     }
@@ -29,15 +39,15 @@ class UserController extends Controller
     public function signin(Request $request) {
         $username = $request['username'];
         $password = HASH('SHA256', $request['password']);
-        $token = Str::random(50);
+        $token = HASH('SHA256', Str::random(100));
 
-        $exist = User::where([
+        $auth = User::where([
             'username' => $username,
             'password' => $password
         ])->exists();
 
-        if ($exist == true) {
-            $auth = User::where([
+        if ($auth == true) {
+            User::where([
                 'username' => $username
             ])->update([
                 'token' => $token
@@ -45,19 +55,19 @@ class UserController extends Controller
 
             $user = User::select('id', 'token')
                 ->firstWhere([
-                    'username' => $request['username']
+                    'username' => $username
                 ]);
 
             return response()
                 ->json([
-                    'status' => 200,
+                    'status' => 101,
                     'message' => 'Signed In',
                     'result' => $user
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
+                    'status' => 505,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -68,9 +78,9 @@ class UserController extends Controller
         $full_name = preg_replace('/\s+/', '+', $full_name);
         $profile_picture = 'https://ui-avatars.com/api/?name=' . $full_name;
         $password = HASH('SHA256', $request['password']);
-        $token = Str::random(50);
+        $token = HASH('SHA256', Str::random(100));
 
-        User::create([
+        $user = User::create([
             'first_name' => $request['first_name'],
             'last_name' => $request['last_name'],
             'username' => $request['username'],
@@ -80,29 +90,26 @@ class UserController extends Controller
             'token' => $token
         ]);
 
-        $user = User::select('id', 'token')
-                ->firstWhere([
-                    'username' => $request['username']
-                ]);
-
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Created',
+                'status' => 202,
+                'message' => 'User Created',
                 'result' => $user
             ]);
     }
 
     public function signout(Request $request, $id) {
-        $token = $request['token'];
-
-        $match = User::select('token')
+        $user_id = User::select('id')
             ->where([
-                'id' => $id,
-                'token' => $token
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             User::findOrFail($id)
                 ->update([
                     'token' => null
@@ -110,28 +117,30 @@ class UserController extends Controller
             
             return response()
                 ->json([
-                    'status' => 200,
+                    'status' => 101,
                     'message' => 'Signed Out'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
 
     public function update(Request $request, $id) {
-        $token = $request['token'];
-
-        $match = User::select('token')
+        $user_id = User::select('id')
             ->where([
-                'id' => $id,
-                'token' => $token
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             $full_name = $request['first_name'] . '+' . $request['last_name'];
             $full_name = preg_replace('/\s+/', '+', $full_name);
             $profile_picture = 'https://ui-avatars.com/api/?name=' . $full_name;
@@ -147,43 +156,45 @@ class UserController extends Controller
                     'password' => $password
                 ]);
                 
-                return response()
-                    ->json([
-                        'status' => 200,
-                        'message' => 'Updated'
-                    ]);
+            return response()
+                ->json([
+                    'status' => 303,
+                    'message' => 'User Updated'
+                ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $token = $request['token'];
-
-        $match = User::select('token')
+        $user_id = User::select('id')
             ->where([
-                'id' => $id,
-                'token' => $token
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             User::findOrFail($id)
                 ->delete();
             
             return response()
                 ->json([
-                    'status' => 200,
-                    'message' => 'Deleted'
+                    'status' => 303,
+                    'message' => 'User Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }

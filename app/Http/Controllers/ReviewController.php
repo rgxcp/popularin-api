@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Comment;
+use App\Film;
 use App\Review;
 use App\User;
+use App\Watchlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -16,8 +19,9 @@ class ReviewController extends Controller
 
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'Review Retrieved',
+                'total_comments' => Comment::where('review_id', $id)->count(),
                 'result' => $review
             ]);
     }
@@ -25,12 +29,14 @@ class ReviewController extends Controller
     public function showFilmReviews($tmdb_id) {
         $reviews = Review::with([
             'user'
-        ])->where('tmdb_id', $tmdb_id)->paginate(30);
+        ])->where('tmdb_id', $tmdb_id)
+          ->paginate(30);
 
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'Reviews Retrieved',
+                'total_reviews' => Review::where('tmdb_id', $tmdb_id)->count(),
                 'results' => $reviews
             ]);
     }
@@ -38,12 +44,14 @@ class ReviewController extends Controller
     public function showUserReviews($user_id) {
         $reviews = Review::with([
             'film'
-        ])->where('user_id', $user_id)->paginate(30);
+        ])->where('user_id', $user_id)
+          ->paginate(30);
 
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'Reviews Retrieved',
+                'total_reviews' => Review::where('user_id', $user_id)->count(),
                 'results' => $reviews
             ]);
     }
@@ -51,24 +59,24 @@ class ReviewController extends Controller
     public function shows() {
         $reviews = Review::with([
             'film', 'user'
-        ])->orderBy('created_at', 'desc')->paginate(30);
+        ])->orderBy('created_at', 'desc')
+          ->paginate(30);
 
         return response()
             ->json([
-                'status' => 201,
-                'message' => 'Success',
+                'status' => 101,
+                'message' => 'Reviews Retrieved',
                 'results' => $reviews
             ]);
     }
 
     public function create(Request $request) {
-        $match = User::select('token')
-            ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+        $auth = User::where([
+            'id' => $request['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
         
-        if ($match == true) {
+        if ($auth == true) {
             Review::create([
                 'user_id' => $request['user_id'],
                 'tmdb_id' => $request['tmdb_id'],
@@ -78,34 +86,54 @@ class ReviewController extends Controller
                 'watch_date' => $request['watch_date']
             ]);
 
-            $is_film_exist = Film::select('tmdb_id')
+            $film_exist = Film::select('tmdb_id')
                 ->where([
                     'tmdb_id' => $request['tmdb_id']
                 ])->exists();
+            
+            $in_watchlist = Watchlist::where([
+                'user_id' => $request['user_id'],
+                'tmdb_id' => $request['tmdb_id']
+            ])->exists();
+    
+            if ($in_watchlist == true) {
+                $watchlist_id = Watchlist::select('id')
+                    ->where([
+                        'user_id' => $request['user_id'],
+                        'tmdb_id' => $request['tmdb_id']
+                    ])->firstOrFail();
+                
+                Watchlist::findOrFail($watchlist_id['id'])
+                    ->delete();
+            } 
 
             return response()
                 ->json([
-                    'status' => 201,
-                    'is_film_exist' => $is_film_exist,
-                    'message' => 'Created'
+                    'status' => 202,
+                    'message' => 'Review Added',
+                    'film_exist' => $film_exist
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Add Review'
                 ]);
         }
     }
 
     public function update(Request $request, $id) {
-        $match = User::select('token')
+        $user_id = Review::select('user_id')
             ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             Review::findOrFail($id)
                 ->update([
                     'rating' => $request['rating'],
@@ -115,39 +143,43 @@ class ReviewController extends Controller
             
             return response()
                 ->json([
-                    'status' => 201,
-                    'message' => 'Updated'
+                    'status' => 303,
+                    'message' => 'Review Updated'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Update Review'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $match = User::select('token')
+        $user_id = Review::select('user_id')
             ->where([
-                'id' => $request['user_id'],
-                'token' => $request['user_token']
-            ])->exists();
+                'id' => $id
+            ])->firstOrFail();
         
-        if ($match == true) {
+        $auth = User::where([
+            'id' => $user_id['user_id'],
+            'token' => $request['user_token']
+        ])->exists();
+        
+        if ($auth == true) {
             Review::findOrFail($id)
                 ->delete();
 
             return response()
                 ->json([
-                    'status' => 201,
-                    'message' => 'Deleted'
+                    'status' => 404,
+                    'message' => 'Review Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 403,
-                    'message' => 'Invalid Token'
+                    'status' => 505,
+                    'message' => 'Not Authorized to Delete Review'
                 ]);
         }
     }
