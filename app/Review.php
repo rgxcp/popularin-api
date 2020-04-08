@@ -9,19 +9,21 @@ class Review extends Model
 {
     use SoftDeletes;
 
-    protected $guarded = [];
+    protected $guarded = [
+        // All columns are guarded
+    ];
 
     protected $hidden = [
+        'user_id',
+        'tmdb_id',
+        'created_at',
+        'updated_at',
         'deleted_at'
     ];
 
     public function film() {
         return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
-
-    // public function reviews() {
-    //     return $this->hasMany(Review::class, 'movies_id', 'id')->orderBy('created_at', 'desc');
-    // }
 
     public function user() {
         return $this->belongsTo(User::class)->select([

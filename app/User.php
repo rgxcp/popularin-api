@@ -18,7 +18,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $guarded = [
+        // All columns are guarded
+    ];
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -27,6 +29,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     protected $hidden = [
         'password',
+        'created_at',
+        'updated_at',
         'deleted_at'
     ];
 }

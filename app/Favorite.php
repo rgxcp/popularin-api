@@ -6,22 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Favorite extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'tmdb_id'
+    protected $guarded = [
+        // All columns are guarded
     ];
 
-    /*
-     * protected $guarded = [
-     *     // Empty
-     * ];
-     */
-
     protected $hidden = [
-        'deleted_at'
+        'user_id',
+        'tmdb_id',
+        'created_at',
+        'updated_at',
     ];
 
     public function film() {
-        return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
+        return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id')
+            ->select([
+                'id',
+                'tmdb_id',
+                'title',
+                'release_date',
+                'poster'
+            ]);
     }
 }

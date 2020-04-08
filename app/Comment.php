@@ -9,20 +9,15 @@ class Comment extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
-        'user_id',
-        'review_id',
-        'comment_text',
-        'comment_date'
+    protected $guarded = [
+        // All columns are guarded
     ];
 
-    /*
-     * protected $guarded = [
-     *     // Empty
-     * ];
-     */
-
     protected $hidden = [
+        'user_id',
+        'review_id',
+        'created_at',
+        'updated_at',
         'deleted_at'
     ];
 
