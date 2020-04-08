@@ -22,7 +22,6 @@ class CreateFilmsTable extends Migration
             $table->string('overview')->nullable();
             $table->bigInteger('contributor')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
