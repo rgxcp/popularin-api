@@ -30,6 +30,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->put('film/{tmdb_id}', 'FilmController@update');
     $router->delete('film/{tmdb_id}', 'FilmController@delete');
 
+    $router->get('user/{user_id}/followings', 'FollowingController@showFollowings');
+    $router->get('user/{user_id}/followers', 'FollowingController@showFollowers');
+    $router->post('user/{user_id}/follow', 'FollowingController@create');
+    $router->delete('user/{user_id}/unfollow', 'FollowingController@delete');
+
     $router->get('film/{tmdb_id}/reviews', 'ReviewController@showFilmReviews');
     $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
     $router->get('review/{id}', 'ReviewController@show');
