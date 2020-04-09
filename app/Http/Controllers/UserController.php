@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Favorite;
+use App\Following;
 use App\Review;
 use App\User;
 use App\Watchlist;
@@ -11,9 +12,16 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function show($id) {
+    public function show(Request $request, $id) {
         $user = User::select('id', 'first_name', 'last_name', 'profile_picture')
             ->findOrFail($id);
+
+        $auth_id = $request->header('auth_id');
+
+        $follows_me = Following::where([
+            'user_id' => $id,
+            'following_id' => $auth_id
+        ])->exists();
 
         return response()
             ->json([
@@ -22,6 +30,9 @@ class UserController extends Controller
                 'total_favorites' => Favorite::where('user_id', $id)->count(),
                 'total_reviews' => Review::where('user_id', $id)->count(),
                 'total_watchlists' => Watchlist::where('user_id', $id)->count(),
+                'total_followings' => Following::where('user_id', $id)->count(),
+                'total_followers' => Following::where('following_id', $id)->count(),
+                'follows_me' => $follows_me,
                 'rate_05' => Review::where('user_id', $id)->where('rating', 0.5)->count(),
                 'rate_10' => Review::where('user_id', $id)->where('rating', 1)->count(),
                 'rate_15' => Review::where('user_id', $id)->where('rating', 1.5)->count(),
