@@ -25,7 +25,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
     $router->get('film/{tmdb_id}', 'FilmController@show');
-    $router->get('films', 'FilmController@shows');
     $router->post('film', 'FilmController@create');
     $router->put('film/{tmdb_id}', 'FilmController@update');
     $router->delete('film/{tmdb_id}', 'FilmController@delete');
@@ -43,10 +42,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->put('review/{id}', 'ReviewController@update');
     $router->delete('review/{id}', 'ReviewController@delete');
 
+    $router->get('user/self', 'UserController@self');
     $router->get('user/{id}', 'UserController@show');
     $router->post('user/signin', 'UserController@signin');
     $router->post('user/signup', 'UserController@signup');
-    $router->post('user/signout/{id}', 'UserController@signout');
+    $router->post('user/signout', 'UserController@signout');
     $router->put('user/{id}', 'UserController@update');
     $router->delete('user/{id}', 'UserController@delete');
 
