@@ -19,7 +19,7 @@ class CreateFilmsTable extends Migration
             $table->string('title');
             $table->date('release_date');
             $table->string('poster');
-            $table->string('overview')->nullable();
+            $table->longText('overview')->nullable();
             $table->bigInteger('contributor')->nullable();
             $table->timestamps();
         });
