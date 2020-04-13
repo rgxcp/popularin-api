@@ -18,22 +18,33 @@ class CommentController extends Controller
 
         return response()
             ->json([
-                'status' => 101,
+                'status' => 000,
                 'message' => 'Comments Retrieved',
-                'total_comments' => Comment::where('review_id', $review_id)->count(),
                 'results' => $comments
             ]);
     }
 
     public function create(Request $request) {
+        $auth_uid = $request->header('auth_uid');
+        $auth_token = $request->header('auth_token');
+        
         $auth = User::where([
-            'id' => $request['user_id'],
-            'token' => $request['user_token']
+            'id' => $auth_uid,
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
+            $this->validate($request, [
+                'review_id' => 'required|integer',
+                'comment_text' => 'required|string'
+            ],[
+                'required' => 'Input field harus di isi.',
+                'integer' => 'Format input field harus berupa integer.',
+                'string' => 'Format input field harus berupa string.'
+            ]);
+            
             Comment::create([
-                'user_id' => $request['user_id'],
+                'user_id' => $auth_uid,
                 'review_id' => $request['review_id'],
                 'comment_text' => $request['comment_text'],
                 'comment_date' => Carbon::now()->format('Y-m-d')
@@ -41,27 +52,25 @@ class CommentController extends Controller
 
             return response()
                 ->json([
-                    'status' => 202,
-                    'message' => 'Comment Created'
+                    'status' => 000,
+                    'message' => 'Comment Added'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Create Comment'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $user_id = Comment::select('user_id')
-            ->where([
-                'id' => $id
-            ])->firstOrFail();
-
+        $auth_uid = Comment::select('user_id')->where('id', $id)->firstOrFail();
+        $auth_token = $request->header('auth_token');
+        
         $auth = User::where([
-            'id' => $user_id['user_id'],
-            'token' => $request['user_token']
+            'id' => $auth_uid['user_id'],
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
@@ -70,14 +79,14 @@ class CommentController extends Controller
 
             return response()
                 ->json([
-                    'status' => 404,
+                    'status' => 000,
                     'message' => 'Comment Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Delete Comment'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }

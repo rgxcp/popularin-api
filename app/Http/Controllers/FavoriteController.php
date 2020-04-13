@@ -10,74 +10,91 @@ use Illuminate\Http\Request;
 class FavoriteController extends Controller
 {
     public function shows(Request $request, $user_id) {
-        $has_favorites = Favorite::where([
-            'user_id' => $request['user_id']
-        ])->exists();
+        $has_favorites = Favorite::where('user_id', $user_id)->exists();
 
         if ($has_favorites == true) {
             $favorites = Favorite::with([
-                    'film'
-                ])->where([
-                    'user_id' => $request['user_id']
-                ])->orderBy('created_at', 'desc')
-                  ->paginate(30);
+                'film'
+            ])->where('user_id', $user_id)
+              ->orderBy('created_at', 'desc')
+              ->paginate(30);
             
             return response()
                 ->json([
-                    'status' => 101,
+                    'status' => 000,
                     'message' => 'Favorites Retrieved',
                     'results' => $favorites
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 606,
-                    'message' => 'Favorites Not Found'
+                    'status' => 000,
+                    'message' => 'Empty Favorites'
                 ]);
         }
     }
 
     public function create(Request $request) {
+        $auth_uid = $request->header('auth_uid');
+        $auth_token = $request->header('auth_token');
+        
         $auth = User::where([
-            'id' => $request['user_id'],
-            'token' => $request['user_token']
+            'id' => $auth_uid,
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
-            Favorite::create([
-                'user_id' => $request['user_id'],
+            $in_favorite = Favorite::where([
+                'user_id' => $auth_uid,
                 'tmdb_id' => $request['tmdb_id']
-            ]);
+            ])->exists();
 
-            $film_exist = Film::select('tmdb_id')
-                ->where([
+            if ($in_favorite == true) {
+                return response()
+                    ->json([
+                        'status' => 000,
+                        'message' => 'Already in Favorite'
+                    ]);
+            } else {
+                $this->validate($request, [
+                    'tmdb_id' => 'required|integer'
+                ],[
+                    'required' => 'Input field harus di isi.',
+                    'integer' => 'Format input field harus berupa integer.'
+                ]);
+    
+                Favorite::create([
+                    'user_id' => $auth_uid,
+                    'tmdb_id' => $request['tmdb_id']
+                ]);
+    
+                $film_exist = Film::where([
                     'tmdb_id' => $request['tmdb_id']
                 ])->exists();
-            
-            return response()
-                ->json([
-                    'status' => 202,
-                    'message' => 'Favorite Added',
-                    'film_exist' => $film_exist
-                ]);
+                
+                return response()
+                    ->json([
+                        'status' => 000,
+                        'message' => 'Favorite Added',
+                        'film_exist' => $film_exist
+                    ]);
+            }
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Add Favorite'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
 
     public function delete(Request $request, $id) {
-        $user_id = Favorite::select('user_id')
-            ->where([
-                'id' => $id
-            ])->firstOrFail();
+        $auth_uid = Favorite::select('user_id')->where('id', $id)->firstOrFail();
+        $auth_token = $request->header('auth_token');
         
         $auth = User::where([
-            'id' => $user_id['user_id'],
-            'token' => $request['user_token']
+            'id' => $auth_uid['user_id'],
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
@@ -86,14 +103,14 @@ class FavoriteController extends Controller
             
             return response()
                 ->json([
-                    'status' => 404,
-                    'message' => 'Favorite Deleted'
+                    'status' => 000,
+                    'message' => 'Favorite Removed'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Delete Favorite'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }

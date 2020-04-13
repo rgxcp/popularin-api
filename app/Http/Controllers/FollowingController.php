@@ -8,122 +8,119 @@ use Illuminate\Http\Request;
 
 class FollowingController extends Controller
 {
-    public function showFollowings(Request $request, $user_id) {
+    public function showFollowings($user_id) {
         $followings = Following::with([
-            'following_info'
+            'following'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
         return response()
             ->json([
-                'status' => 101,
+                'status' => 000,
                 'message' => 'Followings Retrieved',
                 'results' => $followings
             ]);
     }
 
-    public function showFollowers(Request $request, $user_id) {
+    public function showFollowers($user_id) {
         $followers = Following::with([
-            'follower_info'
+            'follower'
         ])->where('following_id', $user_id)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
         return response()
             ->json([
-                'status' => 101,
+                'status' => 000,
                 'message' => 'Followers Retrieved',
                 'results' => $followers
             ]);
     }
 
     public function create(Request $request, $user_id) {
+        $auth_uid = $request->header('auth_uid');
+        $auth_token = $request->header('auth_token');
+        
         $auth = User::where([
-            'id' => $request['auth_id'],
-            'token' => $request['auth_token']
+            'id' => $auth_uid,
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
-            $is_self = $user_id == $request['auth_id'];
-
             $already_followed = Following::where([
-                'user_id' => $request['auth_id'],
+                'user_id' => $auth_uid,
                 'following_id' => $user_id
             ])->exists();
 
-            if ($is_self == true) {
+            $user_exist = User::where([
+                'id' => $user_id
+            ])->exists();
+
+            if ($user_id == $auth_uid) {
                 return response()
                     ->json([
-                        'status' => 505,
+                        'status' => 000,
                         'message' => 'Can\'t Follow Self'
                     ]);
             } else if ($already_followed == true) {
                 return response()
                     ->json([
-                        'status' => 505,
+                        'status' => 000,
                         'message' => 'User Already Followed'
+                    ]);
+            } else if ($user_exist == false) {
+                return response()
+                    ->json([
+                        'status' => 000,
+                        'message' => 'User Not Found'
                     ]);
             } else {
                 Following::create([
-                    'user_id' => $request['auth_id'],
+                    'user_id' => $auth_uid,
                     'following_id' => $user_id
                 ]);
     
                 return response()
                     ->json([
-                        'status' => 202,
+                        'status' => 000,
                         'message' => 'User Followed'
                     ]);
             }
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Follow User'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
 
     public function delete(Request $request, $user_id) {
+        $auth_uid = $request->header('auth_uid');
+        $auth_token = $request->header('auth_token');
+        
         $auth = User::where([
-            'id' => $request['auth_id'],
-            'token' => $request['auth_token']
+            'id' => $auth_uid,
+            'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
-            $is_following = Following::where([
-                'user_id' => $request['auth_id'],
+            Following::where([
+                'user_id' => $auth_uid,
                 'following_id' => $user_id
-            ])->exists();
+            ])->delete();
 
-            $following_id = Following::select('id')
-                ->where([
-                    'user_id' => $request['auth_id'],
-                    'following_id' => $user_id
-                ])->firstOrFail();
-
-            if ($is_following == true) {
-                Following::findOrFail($following_id['id'])
-                    ->delete();
-                
-                return response()
-                    ->json([
-                        'status' => 404,
-                        'message' => 'User Unfollowed'
-                    ]);
-            } else {
-                return response()
-                    ->json([
-                        'status' => 505,
-                        'message' => 'User Isn\'t Followed'
-                    ]);
-            }
+            return response()
+                ->json([
+                    'status' => 000,
+                    'message' => 'User Unfollowed'
+                ]);
         } else {
             return response()
                 ->json([
-                    'status' => 505,
-                    'message' => 'Not Authorized to Unfollow User'
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
                 ]);
         }
     }
