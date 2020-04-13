@@ -17,7 +17,7 @@ class Following extends Model
         'updated_at'
     ];
 
-    public function following_info() {
+    public function following() {
         return $this->belongsTo(User::class, 'following_id', 'id')->select([
             'id',
             'first_name',
@@ -25,7 +25,7 @@ class Following extends Model
         ]);
     }
 
-    public function follower_info() {
+    public function follower() {
         return $this->belongsTo(User::class, 'user_id', 'id')->select([
             'id',
             'first_name',

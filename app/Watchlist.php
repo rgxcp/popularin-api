@@ -18,13 +18,6 @@ class Watchlist extends Model
     ];
 
     public function film() {
-        return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id')
-            ->select([
-                'id',
-                'tmdb_id',
-                'title',
-                'release_date',
-                'poster'
-            ]);
+        return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
 }
