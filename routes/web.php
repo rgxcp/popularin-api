@@ -24,6 +24,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('favorite', 'FavoriteController@create');
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
+    $router->get('user/{user_id}/film/{tmdb_id}', 'FilmController@self');
     $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->post('film', 'FilmController@create');
     $router->put('film/{tmdb_id}', 'FilmController@update');
