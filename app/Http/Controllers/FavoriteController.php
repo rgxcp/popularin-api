@@ -21,14 +21,14 @@ class FavoriteController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 501,
                     'message' => 'Favorites Retrieved',
                     'results' => $favorites
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 959,
                     'message' => 'Empty Favorites'
                 ]);
         }
@@ -52,7 +52,7 @@ class FavoriteController extends Controller
             if ($in_favorite == true) {
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 925,
                         'message' => 'Already in Favorite'
                     ]);
             } else {
@@ -74,7 +74,7 @@ class FavoriteController extends Controller
                 
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 502,
                         'message' => 'Favorite Added',
                         'film_exist' => $film_exist
                     ]);
@@ -82,7 +82,7 @@ class FavoriteController extends Controller
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -103,13 +103,13 @@ class FavoriteController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 504,
                     'message' => 'Favorite Removed'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

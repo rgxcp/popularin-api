@@ -26,14 +26,14 @@ class UserController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 211,
                     'message' => 'Self Retrieved',
                     'result' => $self
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -52,7 +52,7 @@ class UserController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 201,
                 'message' => 'User Retrieved',
                 'favorites' => Favorite::where('user_id', $id)->count(),
                 'reviews' => Review::where('user_id', $id)->count(),
@@ -106,14 +106,14 @@ class UserController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 212,
                     'message' => 'User Signed In',
                     'result' => $user
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -155,7 +155,7 @@ class UserController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 202,
                 'message' => 'User Signed Up',
                 'result' => $user
             ]);
@@ -178,13 +178,13 @@ class UserController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 232,
                     'message' => 'User Signed Out'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 505,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -233,13 +233,13 @@ class UserController extends Controller
                 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 203,
                     'message' => 'User Updated'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -259,13 +259,13 @@ class UserController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 204,
                     'message' => 'User Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

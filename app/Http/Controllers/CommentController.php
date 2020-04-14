@@ -18,7 +18,7 @@ class CommentController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 401,
                 'message' => 'Comments Retrieved',
                 'results' => $comments
             ]);
@@ -52,13 +52,13 @@ class CommentController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 402,
                     'message' => 'Comment Added'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -79,13 +79,13 @@ class CommentController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 404,
                     'message' => 'Comment Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

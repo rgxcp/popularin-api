@@ -17,7 +17,7 @@ class FollowingController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 701,
                 'message' => 'Followings Retrieved',
                 'results' => $followings
             ]);
@@ -32,7 +32,7 @@ class FollowingController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 711,
                 'message' => 'Followers Retrieved',
                 'results' => $followers
             ]);
@@ -60,19 +60,19 @@ class FollowingController extends Controller
             if ($user_id == $auth_uid) {
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 907,
                         'message' => 'Can\'t Follow Self'
                     ]);
             } else if ($already_followed == true) {
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 927,
                         'message' => 'User Already Followed'
                     ]);
             } else if ($user_exist == false) {
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 929,
                         'message' => 'User Not Found'
                     ]);
             } else {
@@ -83,14 +83,14 @@ class FollowingController extends Controller
     
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 702,
                         'message' => 'User Followed'
                     ]);
             }
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -113,13 +113,13 @@ class FollowingController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 704,
                     'message' => 'User Unfollowed'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

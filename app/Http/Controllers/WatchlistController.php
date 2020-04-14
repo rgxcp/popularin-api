@@ -21,14 +21,14 @@ class WatchlistController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 601,
                     'message' => 'Watchlists Retrieved',
                     'results' => $watchlists
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 969,
                     'message' => 'Empty Watchlists'
                 ]);
         }
@@ -52,7 +52,7 @@ class WatchlistController extends Controller
             if ($in_watchlist == true) {
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 926,
                         'message' => 'Already in Watchlist'
                     ]);
             } else {
@@ -74,7 +74,7 @@ class WatchlistController extends Controller
                 
                 return response()
                     ->json([
-                        'status' => 000,
+                        'status' => 602,
                         'message' => 'Watchlist Added',
                         'film_exist' => $film_exist
                     ]);
@@ -82,7 +82,7 @@ class WatchlistController extends Controller
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -103,13 +103,13 @@ class WatchlistController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 604,
                     'message' => 'Watchlist Removed'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

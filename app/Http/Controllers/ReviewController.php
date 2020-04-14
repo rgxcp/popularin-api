@@ -21,7 +21,7 @@ class ReviewController extends Controller
         
         return response()
             ->json([
-                'status' => 000,
+                'status' => 321,
                 'message' => 'Film Reviews Retrieved',
                 'results' => $reviews
             ]);
@@ -36,7 +36,7 @@ class ReviewController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 331,
                 'message' => 'User Reviews Retrieved',
                 'results' => $reviews
             ]);
@@ -49,7 +49,7 @@ class ReviewController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 301,
                 'message' => 'Review Retrieved',
                 'total_comments' => Comment::where('review_id', $id)->count(),
                 'result' => $review
@@ -64,7 +64,7 @@ class ReviewController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 311,
                 'message' => 'Reviews Retrieved',
                 'results' => $reviews
             ]);
@@ -120,14 +120,14 @@ class ReviewController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 302,
                     'message' => 'Review Added',
                     'film_exist' => $film_exist
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -163,13 +163,13 @@ class ReviewController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 303,
                     'message' => 'Review Updated'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -190,13 +190,13 @@ class ReviewController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 304,
                     'message' => 'Review Deleted'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }

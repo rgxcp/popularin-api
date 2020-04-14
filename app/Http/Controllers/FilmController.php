@@ -44,7 +44,7 @@ class FilmController extends Controller
 
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 121,
                     'message' => 'Self Film Retrieved',
                     'latest_rate' => $in_review == false ? 0 : $latest_rate['rating'],
                     'in_favorite' => $in_favorite,
@@ -54,7 +54,7 @@ class FilmController extends Controller
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -68,7 +68,7 @@ class FilmController extends Controller
 
         return response()
             ->json([
-                'status' => 000,
+                'status' => 101,
                 'message' => 'Film Retrieved',
                 'total_favorites' => Favorite::where('tmdb_id', $tmdb_id)->count(),
                 'total_reviews' => Review::where('tmdb_id', $tmdb_id)->count(),
@@ -121,13 +121,13 @@ class FilmController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 102,
                     'message' => 'Film Added',
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -158,13 +158,13 @@ class FilmController extends Controller
                 ]);
             
             return response()->json([
-                'status' => 000,
+                'status' => 103,
                 'message' => 'Film Overview Updated'
             ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
@@ -189,13 +189,13 @@ class FilmController extends Controller
             
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 104,
                     'message' => 'Film Overview Removed'
                 ]);
         } else {
             return response()
                 ->json([
-                    'status' => 000,
+                    'status' => 808,
                     'message' => 'Invalid Credentials'
                 ]);
         }
