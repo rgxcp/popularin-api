@@ -12,17 +12,52 @@ use Illuminate\Http\Request;
 class FilmController extends Controller
 {
     public function self(Request $request, $user_id, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
+        $auth_token = $request->header('auth_token');
 
-        $in_favorite = Favorite::where([
-            'user_id' => $auth_uid,
-            'tmdb_id' => $tmdb_id
+        $auth = User::where([
+            'id' => $user_id,
+            'token' => $auth_token
         ])->exists();
+        
+        if ($auth == true) {
+            $latest_rate = Review::select('rating')
+                ->where([
+                    'user_id' => $user_id,
+                    'tmdb_id' => $tmdb_id
+                ])->latest()
+                  ->first();
+            
+            $in_favorite = Favorite::where([
+                'user_id' => $user_id,
+                'tmdb_id' => $tmdb_id
+            ])->exists();
 
-        $in_watchlist = Watchlist::where([
-            'user_id' => $auth_uid,
-            'tmdb_id' => $tmdb_id
-        ])->exists();
+            $in_review = Review::where([
+                'user_id' => $user_id,
+                'tmdb_id' => $tmdb_id
+            ])->exists();
+    
+            $in_watchlist = Watchlist::where([
+                'user_id' => $user_id,
+                'tmdb_id' => $tmdb_id
+            ])->exists();
+
+            return response()
+                ->json([
+                    'status' => 000,
+                    'message' => 'Self Film Retrieved',
+                    'latest_rate' => $in_review == false ? 0 : $latest_rate['rating'],
+                    'in_favorite' => $in_favorite,
+                    'in_review' => $in_review,
+                    'in_watchlist' => $in_watchlist
+                ]);
+        } else {
+            return response()
+                ->json([
+                    'status' => 000,
+                    'message' => 'Invalid Credentials'
+                ]);
+        }
     }
 
     public function show(Request $request, $tmdb_id) {
