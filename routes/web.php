@@ -16,6 +16,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         return $router->app->version();
     });
 
+    $router->get('status', 'StatusController@shows');
+
     $router->get('review/{review_id}/comments', 'CommentController@shows');
     $router->post('comment', 'CommentController@create');
     $router->delete('comment/{id}', 'CommentController@delete');
