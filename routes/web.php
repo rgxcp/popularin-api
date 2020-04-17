@@ -16,7 +16,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         return $router->app->version();
     });
 
-    $router->get('status', 'StatusController@shows');
+    $router->get('status', 'DeveloperController@showStatus');
 
     $router->get('review/{review_id}/comments', 'CommentController@shows');
     $router->post('comment', 'CommentController@create');
@@ -26,8 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('favorite', 'FavoriteController@create');
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
-    $router->get('user/{user_id}/film/{tmdb_id}', 'FilmController@self');
     $router->get('film/{tmdb_id}', 'FilmController@show');
+    $router->get('film/{tmdb_id}/self', 'FilmController@self');
     $router->post('film', 'FilmController@create');
     $router->put('film/{tmdb_id}', 'FilmController@update');
     $router->delete('film/{tmdb_id}', 'FilmController@delete');
@@ -39,6 +39,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('film/{tmdb_id}/reviews', 'ReviewController@showFilmReviews');
     $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
+    $router->get('user/{user_id}/following/reviews', 'ReviewController@showFollowingReviews');
     $router->get('review/{id}', 'ReviewController@show');
     $router->get('reviews', 'ReviewController@shows');
     $router->post('review', 'ReviewController@create');

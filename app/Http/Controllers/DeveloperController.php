@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-class StatusController extends Controller
+class DeveloperController extends Controller
 {
-    public function shows() {
+    public function showStatus() {
         return response()
             ->json([
                 101 => 'Film Retrieved',
@@ -26,6 +26,7 @@ class StatusController extends Controller
                 311 => 'Reviews Retrieved',
                 321 => 'Film Reviews Retrieved',
                 331 => 'User Reviews Retrieved',
+                371 => 'Following Reviews Retrieved',
                 401 => 'Comments Retrieved',
                 402 => 'Comment Added',
                 404 => 'Comment Deleted',
@@ -45,9 +46,14 @@ class StatusController extends Controller
                 925 => 'Already in Favorite',
                 926 => 'Already in Watchlist',
                 927 => 'User Already Followed',
-                929 => 'User Not Found',
+                919 => 'Empty Film Reviews',
+                929 => 'Empty User Reviews',
+                939 => 'Empty Following Reviews',
+                949 => 'Empty Comments',
                 959 => 'Empty Favorites',
-                969 => 'Empty Watchlists'                
+                969 => 'Empty Watchlists',
+                979 => 'Empty Followings',
+                989 => 'Empty Followers'
             ]);
     }
 }

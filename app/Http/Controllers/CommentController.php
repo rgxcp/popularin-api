@@ -18,9 +18,9 @@ class CommentController extends Controller
 
         return response()
             ->json([
-                'status' => 401,
-                'message' => 'Comments Retrieved',
-                'results' => $comments
+                'status' => isset($comments[0]) ? 401 : 949,
+                'message' => isset($comments[0]) ? 'Comments Retrieved' : 'Empty Comments',
+                'results' => isset($comments[0]) ? $comments : null
             ]);
     }
 

@@ -10,28 +10,18 @@ use Illuminate\Http\Request;
 class FavoriteController extends Controller
 {
     public function shows(Request $request, $user_id) {
-        $has_favorites = Favorite::where('user_id', $user_id)->exists();
-
-        if ($has_favorites == true) {
-            $favorites = Favorite::with([
-                'film'
-            ])->where('user_id', $user_id)
-              ->orderBy('created_at', 'desc')
-              ->paginate(30);
-            
-            return response()
-                ->json([
-                    'status' => 501,
-                    'message' => 'Favorites Retrieved',
-                    'results' => $favorites
-                ]);
-        } else {
-            return response()
-                ->json([
-                    'status' => 959,
-                    'message' => 'Empty Favorites'
-                ]);
-        }
+        $favorites = Favorite::with([
+            'film'
+        ])->where('user_id', $user_id)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()
+            ->json([
+                'status' => isset($favorites[0]) ? 501 : 959,
+                'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
+                'results' => isset($favorites[0]) ? $favorites : null
+            ]);
     }
 
     public function create(Request $request) {

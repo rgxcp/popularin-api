@@ -33,4 +33,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'updated_at',
         'deleted_at'
     ];
+
+    // public function favorites() {
+    //     return $this->hasManyThrough(Favorite::class, Film::class, 'tmdb_id', 'tmdb_id', 'tmdb_id')->orderBy('created_at', 'desc')->take(5);
+    // }
+    
+    // public function reviews() {
+    //     return $this->hasMany(Review::class)->orderBy('created_at', 'desc')->take(5);
+    // }
 }

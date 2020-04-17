@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Comment;
 use App\Film;
+use App\Following;
 use App\Review;
 use App\User;
 use App\Watchlist;
@@ -21,9 +22,9 @@ class ReviewController extends Controller
         
         return response()
             ->json([
-                'status' => 321,
-                'message' => 'Film Reviews Retrieved',
-                'results' => $reviews
+                'status' => isset($reviews[0]) ? 321 : 919,
+                'message' => isset($reviews[0]) ? 'Film Reviews Retrieved' : 'Empty Film Reviews',
+                'results' => isset($reviews[0]) ? $reviews : null
             ]);
     }
 
@@ -36,9 +37,28 @@ class ReviewController extends Controller
 
         return response()
             ->json([
-                'status' => 331,
-                'message' => 'User Reviews Retrieved',
-                'results' => $reviews
+                'status' => isset($reviews[0]) ? 331 : 929,
+                'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
+                'results' => isset($reviews[0]) ? $reviews : null
+            ]);
+    }
+
+    public function showFollowingReviews($user_id) {
+        $following = Following::select('following_id')
+            ->where('user_id', $user_id);
+
+        $reviews = Review::with([
+            'film', 'user'
+        ])->whereIn('user_id', $following)
+          ->orderBy('created_at', 'desc')
+          ->take(5)
+          ->get();
+
+        return response()
+            ->json([
+                'status' => isset($reviews[0]) ? 371 : 939,
+                'message' => isset($reviews[0]) ? 'Following Reviews Retrieved' : 'Empty Following Reviews',
+                'results' => isset($reviews[0]) ? $reviews : null
             ]);
     }
 

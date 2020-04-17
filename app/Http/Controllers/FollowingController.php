@@ -17,9 +17,9 @@ class FollowingController extends Controller
 
         return response()
             ->json([
-                'status' => 701,
-                'message' => 'Followings Retrieved',
-                'results' => $followings
+                'status' => $followings[0] ? 701 : 979,
+                'message' => $followings[0] ? 'Followings Retrieved' : 'Empty Followings',
+                'results' => isset($followings[0]) ? $followings : null
             ]);
     }
 
@@ -32,9 +32,9 @@ class FollowingController extends Controller
 
         return response()
             ->json([
-                'status' => 711,
-                'message' => 'Followers Retrieved',
-                'results' => $followers
+                'status' => isset($followers[0]) ? 711 : 989,
+                'message' => isset($followers[0]) ? 'Followers Retrieved' : 'Empty Followers',
+                'results' => isset($followers[0]) ? $followers : null
             ]);
     }
 
@@ -72,7 +72,7 @@ class FollowingController extends Controller
             } else if ($user_exist == false) {
                 return response()
                     ->json([
-                        'status' => 929,
+                        'status' => 909,
                         'message' => 'User Not Found'
                     ]);
             } else {

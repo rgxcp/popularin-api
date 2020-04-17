@@ -10,28 +10,18 @@ use Illuminate\Http\Request;
 class WatchlistController extends Controller
 {
     public function shows(Request $request, $user_id) {
-        $has_watchlists = Watchlist::where('user_id', $user_id)->exists();
-
-        if ($has_watchlists == true) {
-            $watchlists = Watchlist::with([
-                'film'
-            ])->where('user_id', $user_id)
-              ->orderBy('created_at', 'desc')
-              ->paginate(30);
-            
-            return response()
-                ->json([
-                    'status' => 601,
-                    'message' => 'Watchlists Retrieved',
-                    'results' => $watchlists
-                ]);
-        } else {
-            return response()
-                ->json([
-                    'status' => 969,
-                    'message' => 'Empty Watchlists'
-                ]);
-        }
+        $watchlists = Watchlist::with([
+            'film'
+        ])->where('user_id', $user_id)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()
+            ->json([
+                'status' => isset($watchlists[0]) ? 601 : 969,
+                'message' => isset($watchlists[0]) ? 'Watchlists Retrieved' : 'Empty Watchlists',
+                'results' => isset($watchlists[0]) ? $watchlists : null
+            ]);
     }
 
     public function create(Request $request) {

@@ -10,6 +10,8 @@ use App\Watchlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+//use Illuminate\Support\Collection;
+
 class UserController extends Controller
 {
     public function self(Request $request) {
@@ -50,27 +52,55 @@ class UserController extends Controller
             'following_id' => $auth_uid
         ])->exists();
 
+        $favorites = Favorite::with([
+            'film'
+        ])->where('user_id', $id)
+          ->orderBy('created_at', 'desc')
+          ->take(5)
+          ->get();
+
+        $reviews = Review::with([
+            'film'
+        ])->where('user_id', $id)
+          ->orderBy('created_at', 'desc')
+          ->take(5)
+          ->get();
+
+        $metadata = collect([
+            'follows_me' => $follows_me,
+            'favorites' => Favorite::where('user_id', $id)->count(),
+            'reviews' => Review::where('user_id', $id)->count(),
+            'watchlists' => Watchlist::where('user_id', $id)->count(),
+            'followings' => Following::where('user_id', $id)->count(),
+            'followers' => Following::where('following_id', $id)->count(),
+            'rate_0.5' => Review::where('user_id', $id)->where('rating', 0.5)->count(),
+            'rate_1.0' => Review::where('user_id', $id)->where('rating', 1)->count(),
+            'rate_1.5' => Review::where('user_id', $id)->where('rating', 1.5)->count(),
+            'rate_2.0' => Review::where('user_id', $id)->where('rating', 2)->count(),
+            'rate_2.5' => Review::where('user_id', $id)->where('rating', 2.5)->count(),
+            'rate_3.0' => Review::where('user_id', $id)->where('rating', 3)->count(),
+            'rate_3.5' => Review::where('user_id', $id)->where('rating', 3.5)->count(),
+            'rate_4.0.' => Review::where('user_id', $id)->where('rating', 4)->count(),
+            'rate_4.5' => Review::where('user_id', $id)->where('rating', 4.5)->count(),
+            'rate_5.0' => Review::where('user_id', $id)->where('rating', 5)->count()
+        ]);
+
+        $recent = collect([
+            'favorites' => isset($favorites[0]) ? $favorites : null,
+            'reviews' => isset($reviews[0]) ? $reviews : null
+        ]);
+
+        $result = collect([
+            'user' => $user,
+            'metadata' => $metadata,
+            'recent' => $recent
+        ]);
+
         return response()
             ->json([
                 'status' => 201,
                 'message' => 'User Retrieved',
-                'favorites' => Favorite::where('user_id', $id)->count(),
-                'reviews' => Review::where('user_id', $id)->count(),
-                'watchlists' => Watchlist::where('user_id', $id)->count(),
-                'followings' => Following::where('user_id', $id)->count(),
-                'followers' => Following::where('following_id', $id)->count(),
-                'follows_me' => $follows_me,
-                'rate_0.5' => Review::where('user_id', $id)->where('rating', 0.5)->count(),
-                'rate_1.0' => Review::where('user_id', $id)->where('rating', 1)->count(),
-                'rate_1.5' => Review::where('user_id', $id)->where('rating', 1.5)->count(),
-                'rate_2.0' => Review::where('user_id', $id)->where('rating', 2)->count(),
-                'rate_2.5' => Review::where('user_id', $id)->where('rating', 2.5)->count(),
-                'rate_3.0' => Review::where('user_id', $id)->where('rating', 3)->count(),
-                'rate_3.5' => Review::where('user_id', $id)->where('rating', 3.5)->count(),
-                'rate_4.0.' => Review::where('user_id', $id)->where('rating', 4)->count(),
-                'rate_4.5' => Review::where('user_id', $id)->where('rating', 4.5)->count(),
-                'rate_5.0' => Review::where('user_id', $id)->where('rating', 5)->count(),
-                'result' => $user
+                'result' => $result
             ]);
     }
 
