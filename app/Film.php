@@ -21,6 +21,6 @@ class Film extends Model
             'id',
             'first_name',
             'profile_picture'
-        ]);
+        ])->withTrashed();
     }
 }

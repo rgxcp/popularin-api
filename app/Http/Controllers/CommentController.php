@@ -6,6 +6,7 @@ use App\Comment;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
@@ -16,12 +17,11 @@ class CommentController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
-        return response()
-            ->json([
-                'status' => isset($comments[0]) ? 401 : 949,
-                'message' => isset($comments[0]) ? 'Comments Retrieved' : 'Empty Comments',
-                'results' => isset($comments[0]) ? $comments : null
-            ]);
+        return response()->json([
+            'status' => isset($comments[0]) ? 401 : 949,
+            'message' => isset($comments[0]) ? 'Comments Retrieved' : 'Empty Comments',
+            'result' => isset($comments[0]) ? $comments : null
+        ]);
     }
 
     public function create(Request $request) {
@@ -34,33 +34,35 @@ class CommentController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            $this->validate($request, [
+            $validator = Validator::make($request->all(), [
                 'review_id' => 'required|integer',
                 'comment_text' => 'required|string'
-            ],[
-                'required' => 'Input field harus di isi.',
-                'integer' => 'Format input field harus berupa integer.',
-                'string' => 'Format input field harus berupa string.'
             ]);
-            
-            Comment::create([
-                'user_id' => $auth_uid,
-                'review_id' => $request['review_id'],
-                'comment_text' => $request['comment_text'],
-                'comment_date' => Carbon::now()->format('Y-m-d')
-            ]);
-
-            return response()
-                ->json([
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 999,
+                    'message' => 'Validator Fails',
+                    'result' => $validator->errors()->all()
+                ]);
+            } else {
+                Comment::create([
+                    'user_id' => $auth_uid,
+                    'review_id' => $request['review_id'],
+                    'comment_text' => $request['comment_text'],
+                    'comment_date' => Carbon::now()->format('Y-m-d')
+                ]);
+    
+                return response()->json([
                     'status' => 402,
                     'message' => 'Comment Added'
                 ]);
+            }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -74,20 +76,17 @@ class CommentController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            Comment::findOrFail($id)
-                ->delete();
+            Comment::findOrFail($id)->delete();
 
-            return response()
-                ->json([
-                    'status' => 404,
-                    'message' => 'Comment Deleted'
-                ]);
+            return response()->json([
+                'status' => 404,
+                'message' => 'Comment Deleted'
+            ]);
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 }

@@ -26,8 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('favorite', 'FavoriteController@create');
     $router->delete('favorite/{id}', 'FavoriteController@delete');
 
-    $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->get('film/{tmdb_id}/self', 'FilmController@self');
+    $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->post('film', 'FilmController@create');
     $router->put('film/{tmdb_id}', 'FilmController@update');
     $router->delete('film/{tmdb_id}', 'FilmController@delete');
@@ -38,8 +38,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->delete('user/{user_id}/unfollow', 'FollowingController@delete');
 
     $router->get('film/{tmdb_id}/reviews', 'ReviewController@showFilmReviews');
+    $router->get('film/{tmdb_id}/reviews/following', 'ReviewController@showFollowingReviews');
     $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
-    $router->get('user/{user_id}/following/reviews', 'ReviewController@showFollowingReviews');
     $router->get('review/{id}', 'ReviewController@show');
     $router->get('reviews', 'ReviewController@shows');
     $router->post('review', 'ReviewController@create');

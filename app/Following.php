@@ -22,7 +22,7 @@ class Following extends Model
             'id',
             'first_name',
             'profile_picture'
-        ]);
+        ])->withTrashed();
     }
 
     public function follower() {
@@ -30,6 +30,6 @@ class Following extends Model
             'id',
             'first_name',
             'profile_picture'
-        ]);
+        ])->withTrashed();
     }
 }

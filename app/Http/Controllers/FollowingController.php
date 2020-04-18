@@ -15,12 +15,11 @@ class FollowingController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
-        return response()
-            ->json([
-                'status' => $followings[0] ? 701 : 979,
-                'message' => $followings[0] ? 'Followings Retrieved' : 'Empty Followings',
-                'results' => isset($followings[0]) ? $followings : null
-            ]);
+        return response()->json([
+            'status' => isset($followings[0]) ? 701 : 979,
+            'message' => isset($followings[0]) ? 'Followings Retrieved' : 'Empty Followings',
+            'result' => isset($followings[0]) ? $followings : null
+        ]);
     }
 
     public function showFollowers($user_id) {
@@ -30,12 +29,11 @@ class FollowingController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
-        return response()
-            ->json([
-                'status' => isset($followers[0]) ? 711 : 989,
-                'message' => isset($followers[0]) ? 'Followers Retrieved' : 'Empty Followers',
-                'results' => isset($followers[0]) ? $followers : null
-            ]);
+        return response()->json([
+            'status' => isset($followers[0]) ? 711 : 989,
+            'message' => isset($followers[0]) ? 'Followers Retrieved' : 'Empty Followers',
+            'result' => isset($followers[0]) ? $followers : null
+        ]);
     }
 
     public function create(Request $request, $user_id) {
@@ -48,51 +46,39 @@ class FollowingController extends Controller
         ])->exists();
         
         if ($auth == true) {
+            User::findOrFail($user_id);
+
             $already_followed = Following::where([
                 'user_id' => $auth_uid,
                 'following_id' => $user_id
             ])->exists();
 
-            $user_exist = User::where([
-                'id' => $user_id
-            ])->exists();
-
-            if ($user_id == $auth_uid) {
-                return response()
-                    ->json([
-                        'status' => 907,
-                        'message' => 'Can\'t Follow Self'
-                    ]);
+            if ($auth_uid == $user_id) {
+                return response()->json([
+                    'status' => 907,
+                    'message' => 'Can\'t Follow Self'
+                ]);
             } else if ($already_followed == true) {
-                return response()
-                    ->json([
-                        'status' => 927,
-                        'message' => 'User Already Followed'
-                    ]);
-            } else if ($user_exist == false) {
-                return response()
-                    ->json([
-                        'status' => 909,
-                        'message' => 'User Not Found'
-                    ]);
+                return response()->json([
+                    'status' => 927,
+                    'message' => 'User Already Followed'
+                ]);
             } else {
                 Following::create([
                     'user_id' => $auth_uid,
                     'following_id' => $user_id
                 ]);
     
-                return response()
-                    ->json([
-                        'status' => 702,
-                        'message' => 'User Followed'
-                    ]);
+                return response()->json([
+                    'status' => 702,
+                    'message' => 'User Followed'
+                ]);
             }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -109,19 +95,18 @@ class FollowingController extends Controller
             Following::where([
                 'user_id' => $auth_uid,
                 'following_id' => $user_id
-            ])->delete();
+            ])->firstOrFail()
+              ->delete();
 
-            return response()
-                ->json([
-                    'status' => 704,
-                    'message' => 'User Unfollowed'
-                ]);
+            return response()->json([
+                'status' => 704,
+                'message' => 'User Unfollowed'
+            ]);
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 }

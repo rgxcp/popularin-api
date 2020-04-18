@@ -6,6 +6,7 @@ use App\Favorite;
 use App\Film;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class FavoriteController extends Controller
 {
@@ -16,12 +17,11 @@ class FavoriteController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
-        return response()
-            ->json([
-                'status' => isset($favorites[0]) ? 501 : 959,
-                'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
-                'results' => isset($favorites[0]) ? $favorites : null
-            ]);
+        return response()->json([
+            'status' => isset($favorites[0]) ? 501 : 959,
+            'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
+            'result' => isset($favorites[0]) ? $favorites : null
+        ]);
     }
 
     public function create(Request $request) {
@@ -40,41 +40,41 @@ class FavoriteController extends Controller
             ])->exists();
 
             if ($in_favorite == true) {
-                return response()
-                    ->json([
-                        'status' => 925,
-                        'message' => 'Already in Favorite'
-                    ]);
+                return response()->json([
+                    'status' => 925,
+                    'message' => 'Already in Favorite'
+                ]);
             } else {
-                $this->validate($request, [
+                $validator = Validator::make($request->all(), [
                     'tmdb_id' => 'required|integer'
-                ],[
-                    'required' => 'Input field harus di isi.',
-                    'integer' => 'Format input field harus berupa integer.'
                 ]);
-    
-                Favorite::create([
-                    'user_id' => $auth_uid,
-                    'tmdb_id' => $request['tmdb_id']
-                ]);
-    
-                $film_exist = Film::where([
-                    'tmdb_id' => $request['tmdb_id']
-                ])->exists();
-                
-                return response()
-                    ->json([
+        
+                if ($validator->fails()) {
+                    return response()->json([
+                        'status' => 999,
+                        'message' => 'Validator Fails',
+                        'result' => $validator->errors()->all()
+                    ]);
+                } else {
+                    $film_exist = Film::where('tmdb_id', $request['tmdb_id'])->exists();
+
+                    Favorite::create([
+                        'user_id' => $auth_uid,
+                        'tmdb_id' => $request['tmdb_id']
+                    ]);
+                    
+                    return response()->json([
                         'status' => 502,
                         'message' => 'Favorite Added',
                         'film_exist' => $film_exist
                     ]);
+                }
             }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -88,20 +88,17 @@ class FavoriteController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            Favorite::findOrFail($id)
-                ->delete();
+            Favorite::findOrFail($id)->delete();
             
-            return response()
-                ->json([
-                    'status' => 504,
-                    'message' => 'Favorite Removed'
-                ]);
+            return response()->json([
+                'status' => 504,
+                'message' => 'Favorite Removed'
+            ]);
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 }

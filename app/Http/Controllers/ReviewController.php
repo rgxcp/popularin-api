@@ -10,6 +10,7 @@ use App\User;
 use App\Watchlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
@@ -20,12 +21,30 @@ class ReviewController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
-        return response()
-            ->json([
-                'status' => isset($reviews[0]) ? 321 : 919,
-                'message' => isset($reviews[0]) ? 'Film Reviews Retrieved' : 'Empty Film Reviews',
-                'results' => isset($reviews[0]) ? $reviews : null
-            ]);
+        return response()->json([
+            'status' => isset($reviews[0]) ? 321 : 919,
+            'message' => isset($reviews[0]) ? 'Film Reviews Retrieved' : 'Empty Film Reviews',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
+    }
+
+    public function showFollowingReviews(Request $request, $tmdb_id) {
+        $auth_uid = $request->header('auth_uid');
+
+        $following = Following::select('following_id')->where('user_id', $auth_uid);
+        
+        $reviews = Review::with([
+            'user'
+        ])->where('tmdb_id', $tmdb_id)
+          ->whereIn('user_id', $following)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+
+        return response()->json([
+            'status' => isset($reviews[0]) ? 371 : 939,
+            'message' => isset($reviews[0]) ? 'Following Reviews Retrieved' : 'Empty Following Reviews',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
     }
 
     public function showUserReviews($user_id) {
@@ -35,31 +54,11 @@ class ReviewController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
-        return response()
-            ->json([
-                'status' => isset($reviews[0]) ? 331 : 929,
-                'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
-                'results' => isset($reviews[0]) ? $reviews : null
-            ]);
-    }
-
-    public function showFollowingReviews($user_id) {
-        $following = Following::select('following_id')
-            ->where('user_id', $user_id);
-
-        $reviews = Review::with([
-            'film', 'user'
-        ])->whereIn('user_id', $following)
-          ->orderBy('created_at', 'desc')
-          ->take(5)
-          ->get();
-
-        return response()
-            ->json([
-                'status' => isset($reviews[0]) ? 371 : 939,
-                'message' => isset($reviews[0]) ? 'Following Reviews Retrieved' : 'Empty Following Reviews',
-                'results' => isset($reviews[0]) ? $reviews : null
-            ]);
+        return response()->json([
+            'status' => isset($reviews[0]) ? 331 : 929,
+            'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
     }
 
     public function show($id) {
@@ -67,13 +66,16 @@ class ReviewController extends Controller
             'film', 'user'
         ])->findOrFail($id);
 
-        return response()
-            ->json([
-                'status' => 301,
-                'message' => 'Review Retrieved',
-                'total_comments' => Comment::where('review_id', $id)->count(),
-                'result' => $review
-            ]);
+        $collection = collect([
+            'comments' => Comment::where('review_id', $id)->count(),
+            'review' => $review
+        ]);
+
+        return response()->json([
+            'status' => 301,
+            'message' => 'Review Retrieved',
+            'result' => $collection
+        ]);
     }
 
     public function shows() {
@@ -82,12 +84,11 @@ class ReviewController extends Controller
         ])->orderBy('created_at', 'desc')
           ->paginate(30);
 
-        return response()
-            ->json([
-                'status' => 311,
-                'message' => 'Reviews Retrieved',
-                'results' => $reviews
-            ]);
+        return response()->json([
+            'status' => 311,
+            'message' => 'Reviews Retrieved',
+            'result' => $reviews
+        ]);
     }
 
     public function create(Request $request) {
@@ -100,56 +101,54 @@ class ReviewController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            $in_watchlist = Watchlist::where([
-                'user_id' => $auth_uid,
-                'tmdb_id' => $request['tmdb_id']
-            ])->exists();
-    
-            if ($in_watchlist == true) {
-                Watchlist::where([
-                    'user_id' => $auth_uid,
-                    'tmdb_id' => $request['tmdb_id']
-                ])->delete();
-            }
-
-            $this->validate($request, [
+            $validator = Validator::make($request->all(), [
                 'tmdb_id' => 'required|integer',
                 'rating' => 'required|numeric',
                 'review_text' => 'required|string',
                 'watch_date' => 'required|date'
-            ],[
-                'required' => 'Input field harus di isi.',
-                'integer' => 'Format input field harus berupa integer.',
-                'numeric' => 'Format input field harus berupa double',
-                'string' => 'Format input field harus berupa string.',
-                'date' => 'Format input field harus berupa date.'
             ]);
-            
-            Review::create([
-                'user_id' => $auth_uid,
-                'tmdb_id' => $request['tmdb_id'],
-                'rating' => $request['rating'],
-                'review_text' => $request['review_text'],
-                'review_date' => Carbon::now()->format('Y-m-d'),
-                'watch_date' => $request['watch_date']
-            ]);
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 999,
+                    'message' => 'Validator Fails',
+                    'result' => $validator->errors()->all()
+                ]);
+            } else {
+                $film_exist = Film::where('tmdb_id', $request['tmdb_id'])->exists();
 
-            $film_exist = Film::where([
-                'tmdb_id' => $request['tmdb_id']
-            ])->exists();
-            
-            return response()
-                ->json([
+                $in_watchlist = Watchlist::where([
+                    'user_id' => $auth_uid,
+                    'tmdb_id' => $request['tmdb_id']
+                ])->exists();
+        
+                if ($in_watchlist == true) {
+                    Watchlist::where([
+                        'user_id' => $auth_uid,
+                        'tmdb_id' => $request['tmdb_id']
+                    ])->delete();
+                }
+                
+                Review::create([
+                    'user_id' => $auth_uid,
+                    'tmdb_id' => $request['tmdb_id'],
+                    'rating' => $request['rating'],
+                    'review_text' => $request['review_text'],
+                    'review_date' => Carbon::now()->format('Y-m-d'),
+                    'watch_date' => $request['watch_date']
+                ]);
+                
+                return response()->json([
                     'status' => 302,
                     'message' => 'Review Added',
                     'film_exist' => $film_exist
                 ]);
+            }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -163,35 +162,35 @@ class ReviewController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            $this->validate($request, [
+            $validator = Validator::make($request->all(), [
                 'rating' => 'required|numeric',
                 'review_text' => 'required|string',
                 'watch_date' => 'required|date'
-            ],[
-                'required' => 'Input field harus di isi.',
-                'numeric' => 'Format input field harus berupa double',
-                'string' => 'Format input field harus berupa string.',
-                'date' => 'Format input field harus berupa date.'
             ]);
-
-            Review::findOrFail($id)
-                ->update([
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 999,
+                    'message' => 'Validator Fails',
+                    'result' => $validator->errors()->all()
+                ]);
+            } else {
+                Review::findOrFail($id)->update([
                     'rating' => $request['rating'],
                     'review_text' => $request['review_text'],
                     'watch_date' => $request['watch_date']
                 ]);
-            
-            return response()
-                ->json([
+
+                return response()->json([
                     'status' => 303,
                     'message' => 'Review Updated'
                 ]);
+            }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -205,20 +204,17 @@ class ReviewController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            Review::findOrFail($id)
-                ->delete();
+            Review::findOrFail($id)->delete();
 
-            return response()
-                ->json([
-                    'status' => 304,
-                    'message' => 'Review Deleted'
-                ]);
+            return response()->json([
+                'status' => 304,
+                'message' => 'Review Deleted'
+            ]);
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Film;
 use App\User;
 use App\Watchlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WatchlistController extends Controller
 {
@@ -16,12 +17,11 @@ class WatchlistController extends Controller
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
-        return response()
-            ->json([
-                'status' => isset($watchlists[0]) ? 601 : 969,
-                'message' => isset($watchlists[0]) ? 'Watchlists Retrieved' : 'Empty Watchlists',
-                'results' => isset($watchlists[0]) ? $watchlists : null
-            ]);
+        return response()->json([
+            'status' => isset($watchlists[0]) ? 601 : 969,
+            'message' => isset($watchlists[0]) ? 'Watchlists Retrieved' : 'Empty Watchlists',
+            'result' => isset($watchlists[0]) ? $watchlists : null
+        ]);
     }
 
     public function create(Request $request) {
@@ -40,41 +40,41 @@ class WatchlistController extends Controller
             ])->exists();
 
             if ($in_watchlist == true) {
-                return response()
-                    ->json([
-                        'status' => 926,
-                        'message' => 'Already in Watchlist'
-                    ]);
+                return response()->json([
+                    'status' => 926,
+                    'message' => 'Already in Watchlist'
+                ]);
             } else {
-                $this->validate($request, [
+                $validator = Validator::make($request->all(), [
                     'tmdb_id' => 'required|integer'
-                ],[
-                    'required' => 'Input field harus di isi.',
-                    'integer' => 'Format input field harus berupa integer.'
                 ]);
-    
-                Watchlist::create([
-                    'user_id' => $auth_uid,
-                    'tmdb_id' => $request['tmdb_id']
-                ]);
-    
-                $film_exist = Film::where([
-                    'tmdb_id' => $request['tmdb_id']
-                ])->exists();
-                
-                return response()
-                    ->json([
+        
+                if ($validator->fails()) {
+                    return response()->json([
+                        'status' => 999,
+                        'message' => 'Validator Fails',
+                        'result' => $validator->errors()->all()
+                    ]);
+                } else {
+                    $film_exist = Film::where('tmdb_id', $request['tmdb_id'])->exists();
+
+                    Watchlist::create([
+                        'user_id' => $auth_uid,
+                        'tmdb_id' => $request['tmdb_id']
+                    ]);
+                    
+                    return response()->json([
                         'status' => 602,
                         'message' => 'Watchlist Added',
                         'film_exist' => $film_exist
                     ]);
+                }
             }
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 
@@ -88,20 +88,17 @@ class WatchlistController extends Controller
         ])->exists();
         
         if ($auth == true) {
-            Watchlist::findOrFail($id)
-                ->delete();
+            Watchlist::findOrFail($id)->delete();
             
-            return response()
-                ->json([
-                    'status' => 604,
-                    'message' => 'Watchlist Removed'
-                ]);
+            return response()->json([
+                'status' => 604,
+                'message' => 'Watchlist Removed'
+            ]);
         } else {
-            return response()
-                ->json([
-                    'status' => 808,
-                    'message' => 'Invalid Credentials'
-                ]);
+            return response()->json([
+                'status' => 808,
+                'message' => 'Invalid Credentials'
+            ]);
         }
     }
 }
