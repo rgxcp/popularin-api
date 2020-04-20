@@ -37,6 +37,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('user/{user_id}/follow', 'FollowingController@create');
     $router->delete('user/{user_id}/unfollow', 'FollowingController@delete');
 
+    $router->get('review/{review_id}/likes', 'LikeController@shows');
+    $router->post('like', 'LikeController@create');
+    $router->delete('like/{id}', 'LikeController@delete');
+
     $router->get('film/{tmdb_id}/reviews', 'ReviewController@showFilmReviews');
     $router->get('film/{tmdb_id}/reviews/following', 'ReviewController@showFollowingReviews');
     $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
