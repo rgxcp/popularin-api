@@ -13,6 +13,30 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    public function search(Request $request) {
+        if ($request->filled('query')) {
+            $query = $request->input('query').'%';
+
+            $users = User::select('id', 'full_name', 'profile_picture')
+                ->where('first_name', 'like', $query)
+                ->orWhere('last_name', 'like', $query)
+                ->orWhere('full_name', 'like', $query)
+                ->orderBy('created_at', 'desc')
+                ->paginate(30);
+            
+            return response()->json([
+                'status' => 211,
+                'message' => 'Users Retrieved',
+                'result' => $users
+            ]);
+        } else {
+            return response()->json([
+                'status' => 909,
+                'message' => 'The query param is required.',
+            ]);
+        }
+    }
+
     public function self(Request $request) {
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
@@ -26,7 +50,7 @@ class UserController extends Controller
             $self = User::findOrFail($auth_uid);
             
             return response()->json([
-                'status' => 211,
+                'status' => 221,
                 'message' => 'Self Retrieved',
                 'result' => $self
             ]);
@@ -41,7 +65,7 @@ class UserController extends Controller
     public function show(Request $request, $id) {
         $auth_uid = $request->header('auth_uid');
 
-        $user = User::select('id', 'first_name', 'last_name', 'profile_picture')->findOrFail($id);
+        $user = User::select('id', 'full_name', 'profile_picture')->findOrFail($id);
 
         $favorites = Favorite::with([
             'film'
@@ -96,8 +120,8 @@ class UserController extends Controller
 
     public function signin(Request $request) {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|min:5|max:255',
-            'password' => 'required|string|min:8|max:255'
+            'username' => 'required|string|max:255',
+            'password' => 'required|string|max:255'
         ]);
 
         if ($validator->fails()) {
@@ -161,6 +185,7 @@ class UserController extends Controller
             $user = User::create([
                 'first_name' => $request['first_name'],
                 'last_name' => $request['last_name'],
+                'full_name' => $request['first_name'].' '.$request['last_name'],
                 'username' => $request['username'],
                 'email' => $request['email'],
                 'profile_picture' => 'https://ui-avatars.com/api/?name='.$full_name.'&size=128',
@@ -232,6 +257,7 @@ class UserController extends Controller
                 User::findOrFail($id)->update([
                     'first_name' => $request['first_name'],
                     'last_name' => $request['last_name'],
+                    'full_name' => $request['first_name'].' '.$request['last_name'],
                     'username' => $request['username'],
                     'email' => $request['email'],
                     'profile_picture' => 'https://ui-avatars.com/api/?name='.$full_name.'&size=128',

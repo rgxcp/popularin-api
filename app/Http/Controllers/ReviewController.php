@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Comment;
 use App\Film;
 use App\Following;
+use App\Like;
 use App\Review;
 use App\User;
 use App\Watchlist;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
-    public function showFilmReviews($tmdb_id) {
+    public function showFilmReviewsFromAll($tmdb_id) {
         $reviews = Review::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
@@ -28,7 +29,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showFollowingReviews(Request $request, $tmdb_id) {
+    public function showFilmReviewsFromFollowing(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
 
         $following = Following::select('following_id')->where('user_id', $auth_uid);
@@ -47,6 +48,41 @@ class ReviewController extends Controller
         ]);
     }
 
+    public function showLikedReviews(Request $request, $tmdb_id) {
+        $auth_uid = $request->header('auth_uid');
+
+        $liked = Like::select('review_id')->where('user_id', $auth_uid);
+
+        $reviews = Review::with([
+            'user'
+        ])->where('tmdb_id', $tmdb_id)
+          ->whereIn('id', $liked)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()->json([
+            'status' => isset($reviews[0]) ? 321 : 919,
+            'message' => isset($reviews[0]) ? 'Liked Reviews Retrieved' : 'Empty Liked Reviews',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
+    }
+
+    public function showSelfReviews(Request $request, $tmdb_id) {
+        $auth_uid = $request->header('auth_uid');
+
+        $reviews = Review::where([
+            'user_id' => $auth_uid,
+            'tmdb_id' => $tmdb_id
+        ])->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()->json([
+            'status' => isset($reviews[0]) ? 331 : 919,
+            'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
+    }
+
     public function showUserReviews($user_id) {
         $reviews = Review::with([
             'film'
@@ -61,14 +97,22 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function show($id) {
+    public function show(Request $request, $id) {
+        $auth_uid = $request->header('auth_uid');
+
         $review = Review::with([
             'film', 'user'
         ])->findOrFail($id);
 
-        $collection = collect([
+        $metadata = collect([
             'comments' => Comment::where('review_id', $id)->count(),
-            'review' => $review
+            'likes' => Like::where('review_id', $id)->count(),
+            'liked' => Like::where('user_id', $auth_uid)->where('review_id', $id)->exists(),
+        ]);
+
+        $collection = collect([
+            'review' => $review,
+            'metadata' => $metadata
         ]);
 
         return response()->json([

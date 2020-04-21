@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Film;
+use App\Following;
 use App\User;
 use App\Watchlist;
 use Illuminate\Http\Request;
@@ -10,6 +11,39 @@ use Illuminate\Support\Facades\Validator;
 
 class WatchlistController extends Controller
 {
+    public function showWatchlistsFromAll(Request $request, $tmdb_id) {
+        $watchlists = Watchlist::with([
+            'user'
+        ])->where('tmdb_id', $tmdb_id)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()->json([
+            'status' => isset($watchlists[0]) ? 601 : 959,
+            'message' => isset($watchlists[0]) ? 'Watchlists Retrieved' : 'Empty Watchlists',
+            'result' => isset($watchlists[0]) ? $watchlists : null
+        ]);
+    }
+
+    public function showWatchlistsFromFollowing(Request $request, $tmdb_id) {
+        $auth_uid = $request->header('auth_uid');
+
+        $following = Following::select('following_id')->where('user_id', $auth_uid);
+
+        $watchlists = Watchlist::with([
+            'user'
+        ])->where('tmdb_id', $tmdb_id)
+          ->whereIn('user_id', $following)
+          ->orderBy('created_at', 'desc')
+          ->paginate(30);
+        
+        return response()->json([
+            'status' => isset($watchlists[0]) ? 601 : 959,
+            'message' => isset($watchlists[0]) ? 'Watchlists Retrieved' : 'Empty Watchlists',
+            'result' => isset($watchlists[0]) ? $watchlists : null
+        ]);
+    }
+
     public function shows(Request $request, $user_id) {
         $watchlists = Watchlist::with([
             'film'

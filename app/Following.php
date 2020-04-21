@@ -20,7 +20,7 @@ class Following extends Model
     public function following() {
         return $this->belongsTo(User::class, 'following_id', 'id')->select([
             'id',
-            'first_name',
+            'full_name',
             'profile_picture'
         ])->withTrashed();
     }
@@ -28,7 +28,7 @@ class Following extends Model
     public function follower() {
         return $this->belongsTo(User::class, 'user_id', 'id')->select([
             'id',
-            'first_name',
+            'full_name',
             'profile_picture'
         ])->withTrashed();
     }

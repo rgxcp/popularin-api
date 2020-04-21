@@ -20,4 +20,12 @@ class Watchlist extends Model
     public function film() {
         return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
+
+    public function user() {
+        return $this->belongsTo(User::class)->select([
+            'id',
+            'full_name',
+            'profile_picture'
+        ])->withTrashed();
+    }
 }
