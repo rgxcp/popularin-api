@@ -16,4 +16,12 @@ class Like extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function user() {
+        return $this->belongsTo(User::class)->select([
+            'id',
+            'full_name',
+            'profile_picture'
+        ])->withTrashed();
+    }
 }

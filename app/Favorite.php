@@ -20,4 +20,12 @@ class Favorite extends Model
     public function film() {
         return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
+
+    public function user() {
+        return $this->belongsTo(User::class)->select([
+            'id',
+            'first_name',
+            'profile_picture'
+        ])->withTrashed();
+    }
 }
