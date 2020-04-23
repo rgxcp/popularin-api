@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Validator;
 class FilmController extends Controller
 {
     public function show(Request $request, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
-
         $film = Film::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
@@ -38,27 +36,56 @@ class FilmController extends Controller
             'rate_5.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 5)->count(),
         ]);
 
-        $following = Following::select('following_id')->where('user_id', $auth_uid);
-        
-        $latest = Review::with([
-            'user'
-        ])->where('tmdb_id', $tmdb_id)
-          ->whereIn('user_id', $following)
-          ->orderBy('created_at', 'desc')
-          ->take(5)
-          ->get();
-        
-        $collection = collect([
-            'film' => $film,
-            'metadata' => $metadata,
-            'latest' => isset($latest[0]) ? $latest : null
-        ]);
+        if ($request->headers->has('auth_uid')) {
+            $auth_uid = $request->header('auth_uid');
 
-        return response()->json([
-            'status' => 101,
-            'message' => 'Film Retrieved',
-            'result' => $collection
-        ]);
+            $followings = Following::select('following_id')->where('user_id', $auth_uid);
+
+            $reviews = Review::with([
+                'user'
+            ])->select('id', 'rating', 'user_id')
+              ->where('tmdb_id', $tmdb_id)
+              ->whereIn('user_id', $followings)
+              ->orderBy('created_at', 'desc')
+              ->take(5)
+              ->get();
+            
+            $watchlists = Watchlist::with([
+                'user'
+            ])->where('tmdb_id', $tmdb_id)
+              ->whereIn('user_id', $followings)
+              ->orderBy('created_at', 'desc')
+              ->take(5)
+              ->get();
+            
+            $activity = collect([
+                'reviews' => isset($reviews[0]) ? $reviews : null,
+                'watchlists' => isset($watchlists[0]) ? $watchlists : null
+            ]);
+            
+            $collection = collect([
+                'film' => $film,
+                'metadata' => $metadata,
+                'activity' => $activity
+            ]);
+    
+            return response()->json([
+                'status' => 101,
+                'message' => 'Request Retrieved',
+                'result' => $collection
+            ]);
+        } else {
+            $collection = collect([
+                'film' => $film,
+                'metadata' => $metadata
+            ]);
+
+            return response()->json([
+                'status' => 101,
+                'message' => 'Request Retrieved',
+                'result' => $collection
+            ]);
+        }
     }
 
     public function showSelf(Request $request, $tmdb_id) {
@@ -93,20 +120,20 @@ class FilmController extends Controller
             ])->exists();
 
             $collection = collect([
-                'last_rate' => $in_review == true ? $last_rate['rating'] : null,
+                'last_rate' => isset($last_rate['rating']) ? $last_rate['rating'] : 0,
                 'in_favorite' => $in_favorite,
                 'in_review' => $in_review,
                 'in_watchlist' => $in_watchlist
             ]);
 
             return response()->json([
-                'status' => 121,
-                'message' => 'Self Film Retrieved',
+                'status' => 101,
+                'message' => 'Request Retrieved',
                 'result' => $collection
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -131,7 +158,7 @@ class FilmController extends Controller
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
@@ -144,13 +171,13 @@ class FilmController extends Controller
                 ]);
                 
                 return response()->json([
-                    'status' => 102,
-                    'message' => 'Film Added',
+                    'status' => 202,
+                    'message' => 'Request Created',
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -172,7 +199,7 @@ class FilmController extends Controller
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
@@ -183,13 +210,13 @@ class FilmController extends Controller
                 ]);
                 
                 return response()->json([
-                    'status' => 103,
-                    'message' => 'Film Overview Updated'
+                    'status' => 303,
+                    'message' => 'Request Updated'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -211,12 +238,12 @@ class FilmController extends Controller
             ]);
             
             return response()->json([
-                'status' => 104,
-                'message' => 'Film Overview Removed'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

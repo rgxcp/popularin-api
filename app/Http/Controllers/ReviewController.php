@@ -23,8 +23,8 @@ class ReviewController extends Controller
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($reviews[0]) ? 321 : 919,
-            'message' => isset($reviews[0]) ? 'Film Reviews Retrieved' : 'Empty Film Reviews',
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($reviews[0]) ? $reviews : null
         ]);
     }
@@ -32,18 +32,18 @@ class ReviewController extends Controller
     public function showFilmReviewsFromFollowing(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
 
-        $following = Following::select('following_id')->where('user_id', $auth_uid);
+        $followings = Following::select('following_id')->where('user_id', $auth_uid);
         
         $reviews = Review::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-          ->whereIn('user_id', $following)
+          ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
 
         return response()->json([
-            'status' => isset($reviews[0]) ? 371 : 939,
-            'message' => isset($reviews[0]) ? 'Following Reviews Retrieved' : 'Empty Following Reviews',
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($reviews[0]) ? $reviews : null
         ]);
     }
@@ -51,18 +51,18 @@ class ReviewController extends Controller
     public function showLikedReviews(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
 
-        $liked = Like::select('review_id')->where('user_id', $auth_uid);
+        $likes = Like::select('review_id')->where('user_id', $auth_uid);
 
         $reviews = Review::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-          ->whereIn('id', $liked)
+          ->whereIn('id', $likes)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($reviews[0]) ? 321 : 919,
-            'message' => isset($reviews[0]) ? 'Liked Reviews Retrieved' : 'Empty Liked Reviews',
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($reviews[0]) ? $reviews : null
         ]);
     }
@@ -77,8 +77,8 @@ class ReviewController extends Controller
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($reviews[0]) ? 331 : 919,
-            'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($reviews[0]) ? $reviews : null
         ]);
     }
@@ -91,8 +91,8 @@ class ReviewController extends Controller
           ->paginate(30);
 
         return response()->json([
-            'status' => isset($reviews[0]) ? 331 : 929,
-            'message' => isset($reviews[0]) ? 'User Reviews Retrieved' : 'Empty User Reviews',
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($reviews[0]) ? $reviews : null
         ]);
     }
@@ -116,8 +116,8 @@ class ReviewController extends Controller
         ]);
 
         return response()->json([
-            'status' => 301,
-            'message' => 'Review Retrieved',
+            'status' => 101,
+            'message' => 'Request Retrieved',
             'result' => $collection
         ]);
     }
@@ -129,8 +129,8 @@ class ReviewController extends Controller
           ->paginate(30);
 
         return response()->json([
-            'status' => 311,
-            'message' => 'Reviews Retrieved',
+            'status' => 101,
+            'message' => 'Request Retrieved',
             'result' => $reviews
         ]);
     }
@@ -154,28 +154,30 @@ class ReviewController extends Controller
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                $film_exist = Film::where('tmdb_id', $request['tmdb_id'])->exists();
+                $tmdb_id = $request['tmdb_id'];
+
+                $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
 
                 $in_watchlist = Watchlist::where([
                     'user_id' => $auth_uid,
-                    'tmdb_id' => $request['tmdb_id']
+                    'tmdb_id' => $tmdb_id
                 ])->exists();
         
                 if ($in_watchlist == true) {
                     Watchlist::where([
                         'user_id' => $auth_uid,
-                        'tmdb_id' => $request['tmdb_id']
+                        'tmdb_id' => $tmdb_id
                     ])->delete();
                 }
                 
                 Review::create([
                     'user_id' => $auth_uid,
-                    'tmdb_id' => $request['tmdb_id'],
+                    'tmdb_id' => $tmdb_id,
                     'rating' => $request['rating'],
                     'review_text' => $request['review_text'],
                     'review_date' => Carbon::now()->format('Y-m-d'),
@@ -183,14 +185,14 @@ class ReviewController extends Controller
                 ]);
                 
                 return response()->json([
-                    'status' => 302,
-                    'message' => 'Review Added',
+                    'status' => 202,
+                    'message' => 'Request Created',
                     'film_exist' => $film_exist
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -214,7 +216,7 @@ class ReviewController extends Controller
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
@@ -227,12 +229,12 @@ class ReviewController extends Controller
 
                 return response()->json([
                     'status' => 303,
-                    'message' => 'Review Updated'
+                    'message' => 'Request Updated'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -251,12 +253,12 @@ class ReviewController extends Controller
             Review::findOrFail($id)->delete();
 
             return response()->json([
-                'status' => 304,
-                'message' => 'Review Deleted'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

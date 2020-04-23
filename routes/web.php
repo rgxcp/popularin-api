@@ -36,6 +36,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('user/{user_id}/followings', 'FollowingController@showFollowings');
     $router->get('user/{user_id}/followers', 'FollowingController@showFollowers');
+    $router->get('user/{user_id}/mutuals', 'FollowingController@showMutuals');
     $router->post('user/{user_id}/follow', 'FollowingController@create');
     $router->delete('user/{user_id}/unfollow', 'FollowingController@delete');
 
@@ -58,10 +59,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('user/search', 'UserController@search');
     $router->get('user/self', 'UserController@self');
     $router->get('user/{id}', 'UserController@show');
-    $router->post('user/signin', 'UserController@signin');
     $router->post('user/signup', 'UserController@signup');
+    $router->post('user/signin', 'UserController@signin');
     $router->post('user/signout', 'UserController@signout');
     $router->put('user/{id}', 'UserController@update');
+    $router->put('user/{id}/password', 'UserController@updatePassword');
     $router->delete('user/{id}', 'UserController@delete');
 
     $router->get('film/{film_id}/watchlists/from/all', 'WatchlistController@showWatchlistsFromAll');

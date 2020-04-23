@@ -14,12 +14,12 @@ class CommentController extends Controller
         $comments = Comment::with([
             'user'
         ])->where('review_id', $review_id)
-          ->orderBy('created_at', 'desc')
+          ->orderBy('created_at', 'asc')
           ->paginate(30);
 
         return response()->json([
-            'status' => isset($comments[0]) ? 401 : 949,
-            'message' => isset($comments[0]) ? 'Comments Retrieved' : 'Empty Comments',
+            'status' => isset($comments[0]) ? 101 : 606,
+            'message' => isset($comments[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($comments[0]) ? $comments : null
         ]);
     }
@@ -41,7 +41,7 @@ class CommentController extends Controller
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
@@ -54,13 +54,13 @@ class CommentController extends Controller
                 ]);
     
                 return response()->json([
-                    'status' => 402,
-                    'message' => 'Comment Added'
+                    'status' => 202,
+                    'message' => 'Request Created'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -80,11 +80,11 @@ class CommentController extends Controller
 
             return response()->json([
                 'status' => 404,
-                'message' => 'Comment Deleted'
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

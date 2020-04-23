@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class FavoriteController extends Controller
 {
-    public function showFavoritesFromAll(Request $request, $tmdb_id) {
+    public function showFavoritesFromAll($tmdb_id) {
         $favorites = Favorite::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
@@ -19,8 +19,8 @@ class FavoriteController extends Controller
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($favorites[0]) ? 501 : 959,
-            'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
+            'status' => isset($favorites[0]) ? 101 : 606,
+            'message' => isset($favorites[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($favorites[0]) ? $favorites : null
         ]);
     }
@@ -28,23 +28,23 @@ class FavoriteController extends Controller
     public function showFavoritesFromFollowing(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
 
-        $following = Following::select('following_id')->where('user_id', $auth_uid);
+        $followings = Following::select('following_id')->where('user_id', $auth_uid);
 
         $favorites = Favorite::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-          ->whereIn('user_id', $following)
+          ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($favorites[0]) ? 501 : 959,
-            'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
+            'status' => isset($favorites[0]) ? 101 : 606,
+            'message' => isset($favorites[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($favorites[0]) ? $favorites : null
         ]);
     }
 
-    public function shows(Request $request, $user_id) {
+    public function shows($user_id) {
         $favorites = Favorite::with([
             'film'
         ])->where('user_id', $user_id)
@@ -52,8 +52,8 @@ class FavoriteController extends Controller
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($favorites[0]) ? 501 : 959,
-            'message' => isset($favorites[0]) ? 'Favorites Retrieved' : 'Empty Favorites',
+            'status' => isset($favorites[0]) ? 101 : 606,
+            'message' => isset($favorites[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($favorites[0]) ? $favorites : null
         ]);
     }
@@ -68,15 +68,17 @@ class FavoriteController extends Controller
         ])->exists();
         
         if ($auth == true) {
+            $tmdb_id = $request['tmdb_id'];
+
             $in_favorite = Favorite::where([
                 'user_id' => $auth_uid,
-                'tmdb_id' => $request['tmdb_id']
+                'tmdb_id' => $tmdb_id
             ])->exists();
 
             if ($in_favorite == true) {
                 return response()->json([
-                    'status' => 925,
-                    'message' => 'Already in Favorite'
+                    'status' => 646,
+                    'message' => 'Already Favorited'
                 ]);
             } else {
                 $validator = Validator::make($request->all(), [
@@ -85,28 +87,28 @@ class FavoriteController extends Controller
         
                 if ($validator->fails()) {
                     return response()->json([
-                        'status' => 999,
+                        'status' => 626,
                         'message' => 'Validator Fails',
                         'result' => $validator->errors()->all()
                     ]);
                 } else {
-                    $film_exist = Film::where('tmdb_id', $request['tmdb_id'])->exists();
+                    $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
 
                     Favorite::create([
                         'user_id' => $auth_uid,
-                        'tmdb_id' => $request['tmdb_id']
+                        'tmdb_id' => $tmdb_id
                     ]);
                     
                     return response()->json([
-                        'status' => 502,
-                        'message' => 'Favorite Added',
+                        'status' => 202,
+                        'message' => 'Request Created',
                         'film_exist' => $film_exist
                     ]);
                 }
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -125,12 +127,12 @@ class FavoriteController extends Controller
             Favorite::findOrFail($id)->delete();
             
             return response()->json([
-                'status' => 504,
-                'message' => 'Favorite Removed'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

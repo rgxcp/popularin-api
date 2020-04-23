@@ -16,8 +16,8 @@ class FollowingController extends Controller
           ->paginate(30);
 
         return response()->json([
-            'status' => isset($followings[0]) ? 701 : 979,
-            'message' => isset($followings[0]) ? 'Followings Retrieved' : 'Empty Followings',
+            'status' => isset($followings[0]) ? 101 : 606,
+            'message' => isset($followings[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($followings[0]) ? $followings : null
         ]);
     }
@@ -30,9 +30,29 @@ class FollowingController extends Controller
           ->paginate(30);
 
         return response()->json([
-            'status' => isset($followers[0]) ? 711 : 989,
-            'message' => isset($followers[0]) ? 'Followers Retrieved' : 'Empty Followers',
+            'status' => isset($followers[0]) ? 101 : 606,
+            'message' => isset($followers[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($followers[0]) ? $followers : null
+        ]);
+    }
+
+    public function showMutuals(Request $request, $user_id) {
+        $auth_uid = $request->header('auth_uid');
+
+        $auth_followings = Following::select('following_id')->where('user_id', $auth_uid)->pluck('following_id')->toArray();
+        $user_followings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
+        $intersect_followings = array_values(array_intersect($auth_followings, $user_followings));
+
+        $mutuals = User::withTrashed()
+            ->select('id', 'full_name', 'profile_picture')
+            ->whereIn('id', $intersect_followings)
+            ->orderBy('created_at', 'desc')
+            ->paginate(30);
+
+        return response()->json([
+            'status' => isset($mutuals[0]) ? 101 : 606,
+            'message' => isset($mutuals[0]) ? 'Request Retrieved' : 'Request Not Found',
+            'result' => isset($mutuals[0]) ? $mutuals : null
         ]);
     }
 
@@ -55,13 +75,13 @@ class FollowingController extends Controller
 
             if ($auth_uid == $user_id) {
                 return response()->json([
-                    'status' => 907,
+                    'status' => 636,
                     'message' => 'Can\'t Follow Self'
                 ]);
             } else if ($already_followed == true) {
                 return response()->json([
-                    'status' => 927,
-                    'message' => 'User Already Followed'
+                    'status' => 656,
+                    'message' => 'Already Followed'
                 ]);
             } else {
                 Following::create([
@@ -70,13 +90,13 @@ class FollowingController extends Controller
                 ]);
     
                 return response()->json([
-                    'status' => 702,
-                    'message' => 'User Followed'
+                    'status' => 202,
+                    'message' => 'Request Created'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -99,12 +119,12 @@ class FollowingController extends Controller
               ->delete();
 
             return response()->json([
-                'status' => 704,
-                'message' => 'User Unfollowed'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

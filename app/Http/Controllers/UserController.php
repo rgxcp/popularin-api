@@ -25,14 +25,14 @@ class UserController extends Controller
                 ->paginate(30);
             
             return response()->json([
-                'status' => 211,
-                'message' => 'Users Retrieved',
+                'status' => 101,
+                'message' => 'Request Retrieved',
                 'result' => $users
             ]);
         } else {
             return response()->json([
-                'status' => 909,
-                'message' => 'The query param is required.',
+                'status' => 606,
+                'message' => 'Request Not Found'
             ]);
         }
     }
@@ -50,13 +50,13 @@ class UserController extends Controller
             $self = User::findOrFail($auth_uid);
             
             return response()->json([
-                'status' => 221,
-                'message' => 'Self Retrieved',
+                'status' => 101,
+                'message' => 'Request Retrieved',
                 'result' => $self
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -82,7 +82,8 @@ class UserController extends Controller
           ->get();
 
         $metadata = collect([
-            'follows_me' => Following::where('user_id', $id)->where('following_id', $auth_uid)->exists(),
+            'is_following' => Following::where('user_id', $auth_uid)->where('following_id', $id)->exists(),
+            'is_follower' => Following::where('user_id', $id)->where('following_id', $auth_uid)->exists(),
             'favorites' => Favorite::where('user_id', $id)->count(),
             'reviews' => Review::where('user_id', $id)->count(),
             'watchlists' => Watchlist::where('user_id', $id)->count(),
@@ -100,7 +101,7 @@ class UserController extends Controller
             'rate_5.0' => Review::where('user_id', $id)->where('rating', 5)->count()
         ]);
 
-        $latest = collect([
+        $activity = collect([
             'favorites' => isset($favorites[0]) ? $favorites : null,
             'reviews' => isset($reviews[0]) ? $reviews : null
         ]);
@@ -108,14 +109,52 @@ class UserController extends Controller
         $collection = collect([
             'user' => $user,
             'metadata' => $metadata,
-            'latest' => $latest
+            'activity' => $activity
         ]);
 
         return response()->json([
-            'status' => 201,
-            'message' => 'User Retrieved',
+            'status' => 101,
+            'message' => 'Request Retrieved',
             'result' => $collection
         ]);
+    }
+
+    public function signup(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'username' => 'required|string|alpha_dash|min:5|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|max:255|different:username'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
+            ]);
+        } else {
+            $full_name = $request['first_name'].' '.$request['last_name'];
+            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=128';
+    
+            $user = User::create([
+                'first_name' => $request['first_name'],
+                'last_name' => $request['last_name'],
+                'full_name' => $full_name,
+                'username' => $request['username'],
+                'email' => $request['email'],
+                'profile_picture' => $profile_picture,
+                'password' => HASH('SHA256', $request['password']),
+                'token' => HASH('SHA256', Str::random(100))
+            ]);
+    
+            return response()->json([
+                'status' => 505,
+                'message' => 'User Signed Up',
+                'result' => $user
+            ]);
+        }
     }
 
     public function signin(Request $request) {
@@ -126,7 +165,7 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 999,
+                'status' => 626,
                 'message' => 'Validator Fails',
                 'result' => $validator->errors()->all()
             ]);
@@ -139,65 +178,23 @@ class UserController extends Controller
             ])->exists();
     
             if ($auth == true) {
-                User::where([
-                    'username' => $username
-                ])->update([
+                User::where('username', $username)->update([
                     'token' => HASH('SHA256', Str::random(100))
                 ]);
     
-                $user = User::select('id', 'token')->firstWhere([
-                    'username' => $username
-                ]);
+                $user = User::select('id', 'token')->firstWhere('username', $username);
     
                 return response()->json([
-                    'status' => 212,
+                    'status' => 515,
                     'message' => 'User Signed In',
                     'result' => $user
                 ]);
             } else {
                 return response()->json([
-                    'status' => 808,
+                    'status' => 616,
                     'message' => 'Invalid Credentials'
                 ]);
             }
-        }
-    }
-
-    public function signup(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'username' => 'required|string|min:5|max:255|unique:users',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|string|min:8|max:255'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 999,
-                'message' => 'Validator Fails',
-                'result' => $validator->errors()->all()
-            ]);
-        } else {
-            $full_name = $request['first_name'].'+'.$request['last_name'];
-            $full_name = preg_replace('/\s+/', '+', $full_name);
-    
-            $user = User::create([
-                'first_name' => $request['first_name'],
-                'last_name' => $request['last_name'],
-                'full_name' => $request['first_name'].' '.$request['last_name'],
-                'username' => $request['username'],
-                'email' => $request['email'],
-                'profile_picture' => 'https://ui-avatars.com/api/?name='.$full_name.'&size=128',
-                'password' => HASH('SHA256', $request['password']),
-                'token' => HASH('SHA256', Str::random(100))
-            ]);
-    
-            return response()->json([
-                'status' => 202,
-                'message' => 'User Signed Up',
-                'result' => $user
-            ]);
         }
     }
 
@@ -216,12 +213,12 @@ class UserController extends Controller
             ]);
             
             return response()->json([
-                'status' => 232,
+                'status' => 525,
                 'message' => 'User Signed Out'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -239,41 +236,76 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'username' => 'required|string|min:5|max:255|unique:users',
-                'email' => 'required|email|max:255|unique:users',
-                'password' => 'required|string|min:8|max:255'
+                'username' => 'required|string|alpha_dash|min:5|max:255|unique:users,username,'.$id,
+                'email' => 'required|email|max:255|unique:users,email,'.$id
             ]);
     
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 999,
+                    'status' => 626,
                     'message' => 'Validator Fails',
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                $full_name = $request['first_name'].'+'.$request['last_name'];
-                $full_name = preg_replace('/\s+/', '+', $full_name);
+                $full_name = $request['first_name'].' '.$request['last_name'];
+                $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=128';
                 
                 User::findOrFail($id)->update([
                     'first_name' => $request['first_name'],
                     'last_name' => $request['last_name'],
-                    'full_name' => $request['first_name'].' '.$request['last_name'],
+                    'full_name' => $full_name,
                     'username' => $request['username'],
                     'email' => $request['email'],
-                    'profile_picture' => 'https://ui-avatars.com/api/?name='.$full_name.'&size=128',
-                    'password' => HASH('SHA256', $request['password'])
+                    'profile_picture' => $profile_picture
                 ]);
                     
                 return response()->json([
-                    'status' => 203,
-                    'message' => 'User Updated'
+                    'status' => 303,
+                    'message' => 'Request Updated'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
+        }
+    }
+
+    public function updatePassword(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string|max:255',
+            'new_password' => 'required|string|min:8|max:255',
+            'confirm_password' => 'required|string|same:new_password'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
+            ]);
+        } else {
+            $auth = User::where([
+                'id' => $id,
+                'password' => HASH('SHA256', $request['current_password'])
+            ])->exists();
+
+            if ($auth == true) {
+                User::findOrFail($id)->update([
+                    'password' => HASH('SHA256', $request['confirm_password'])
+                ]);
+                    
+                return response()->json([
+                    'status' => 303,
+                    'message' => 'Request Updated'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 616,
+                    'message' => 'Invalid Credentials'
+                ]);
+            }
         }
     }
 
@@ -289,12 +321,12 @@ class UserController extends Controller
             User::findOrFail($id)->delete();
             
             return response()->json([
-                'status' => 204,
-                'message' => 'User Deleted'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }

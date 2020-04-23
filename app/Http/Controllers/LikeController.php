@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class LikeController extends Controller
 {
-    public function showLikesFromAll(Request $request, $review_id) {
+    public function showLikesFromAll($review_id) {
         $likes = Like::with([
             'user'
         ])->where('review_id', $review_id)
@@ -18,8 +18,8 @@ class LikeController extends Controller
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($likes[0]) ? 501 : 959,
-            'message' => isset($likes[0]) ? 'Likes Retrieved' : 'Empty Likes',
+            'status' => isset($likes[0]) ? 101 : 606,
+            'message' => isset($likes[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($likes[0]) ? $likes : null
         ]);
     }
@@ -27,18 +27,18 @@ class LikeController extends Controller
     public function showLikesFromFollowing(Request $request, $review_id) {
         $auth_uid = $request->header('auth_uid');
 
-        $following = Following::select('following_id')->where('user_id', $auth_uid);
+        $followings = Following::select('following_id')->where('user_id', $auth_uid);
 
         $likes = Like::with([
             'user'
         ])->where('review_id', $review_id)
-          ->whereIn('user_id', $following)
+          ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
           ->paginate(30);
         
         return response()->json([
-            'status' => isset($likes[0]) ? 501 : 959,
-            'message' => isset($likes[0]) ? 'Likes Retrieved' : 'Empty Likes',
+            'status' => isset($likes[0]) ? 101 : 606,
+            'message' => isset($likes[0]) ? 'Request Retrieved' : 'Request Not Found',
             'result' => isset($likes[0]) ? $likes : null
         ]);
     }
@@ -60,8 +60,8 @@ class LikeController extends Controller
 
             if ($already_liked == true) {
                 return response()->json([
-                    'status' => 925,
-                    'message' => 'Review Already Liked'
+                    'status' => 666,
+                    'message' => 'Already Liked'
                 ]);
             } else {
                 Like::create([
@@ -70,13 +70,13 @@ class LikeController extends Controller
                 ]);
                 
                 return response()->json([
-                    'status' => 502,
-                    'message' => 'Review Liked'
+                    'status' => 202,
+                    'message' => 'Request Created'
                 ]);
             }
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
@@ -95,12 +95,12 @@ class LikeController extends Controller
             Like::where('review_id', $review_id)->firstOrFail()->delete();
             
             return response()->json([
-                'status' => 504,
-                'message' => 'Review Unliked'
+                'status' => 404,
+                'message' => 'Request Deleted'
             ]);
         } else {
             return response()->json([
-                'status' => 808,
+                'status' => 616,
                 'message' => 'Invalid Credentials'
             ]);
         }
