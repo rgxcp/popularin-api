@@ -17,10 +17,11 @@ class UserController extends Controller
         if ($request->filled('query')) {
             $query = $request->input('query').'%';
 
-            $users = User::select('id', 'full_name', 'profile_picture')
+            $users = User::select('id', 'full_name', 'username', 'profile_picture')
                 ->where('first_name', 'like', $query)
                 ->orWhere('last_name', 'like', $query)
                 ->orWhere('full_name', 'like', $query)
+                ->orWhere('username', 'like', $query)
                 ->orderBy('created_at', 'desc')
                 ->paginate(30);
             
@@ -65,7 +66,7 @@ class UserController extends Controller
     public function show(Request $request, $id) {
         $auth_uid = $request->header('auth_uid');
 
-        $user = User::select('id', 'full_name', 'profile_picture')->findOrFail($id);
+        $user = User::select('id', 'full_name', 'username', 'profile_picture')->findOrFail($id);
 
         $favorites = Favorite::with([
             'film'
