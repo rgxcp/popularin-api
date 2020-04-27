@@ -31,7 +31,7 @@ class FilmController extends Controller
             'rate_2.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 2.5)->count(),
             'rate_3.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 3)->count(),
             'rate_3.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 3.5)->count(),
-            'rate_4.0.' => Review::where('tmdb_id', $tmdb_id)->where('rating', 4)->count(),
+            'rate_4.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 4)->count(),
             'rate_4.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 4.5)->count(),
             'rate_5.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 5)->count(),
         ]);
