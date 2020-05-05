@@ -21,6 +21,7 @@ class Like extends Model
         return $this->belongsTo(User::class)->select([
             'id',
             'full_name',
+            'username',
             'profile_picture'
         ])->withTrashed();
     }
