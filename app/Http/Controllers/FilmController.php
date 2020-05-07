@@ -151,6 +151,7 @@ class FilmController extends Controller
         if ($auth == true) {
             $validator = Validator::make($request->all(), [
                 'tmdb_id' => 'required|integer|unique:films',
+                'genre_id' => 'required|integer',
                 'title' => 'required|string|max:255',
                 'release_date' => 'required|date',
                 'poster' => 'required|string|max:255'
@@ -165,6 +166,7 @@ class FilmController extends Controller
             } else {
                 Film::create([
                     'tmdb_id' => $request['tmdb_id'],
+                    'genre_id' => $request['genre_id'],
                     'title' => $request['title'],
                     'release_date' => $request['release_date'],
                     'poster' => $request['poster']

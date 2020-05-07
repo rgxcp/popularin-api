@@ -16,6 +16,7 @@ class CreateFilmsTable extends Migration
         Schema::create('films', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('tmdb_id')->unique();
+            $table->smallInteger('genre_id');
             $table->string('title');
             $table->date('release_date');
             $table->string('poster');
