@@ -46,16 +46,24 @@ class CommentController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                Comment::create([
+                $comment = Comment::create([
                     'user_id' => $auth_uid,
                     'review_id' => $request['review_id'],
                     'comment_text' => $request['comment_text'],
                     'comment_date' => Carbon::now()->format('Y-m-d')
                 ]);
+
+                $user = User::select('id', 'first_name', 'profile_picture')->findOrFail($auth_uid);
+
+                $collection = collect([
+                    'comment' => $comment,
+                    'user' => $user
+                ]);
     
                 return response()->json([
                     'status' => 202,
-                    'message' => 'Request Created'
+                    'message' => 'Request Created',
+                    'result' => $collection,
                 ]);
             }
         } else {
