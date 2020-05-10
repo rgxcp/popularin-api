@@ -21,6 +21,7 @@ class Following extends Model
         return $this->belongsTo(User::class, 'following_id', 'id')->select([
             'id',
             'full_name',
+            'username',
             'profile_picture'
         ])->withTrashed();
     }
@@ -29,6 +30,7 @@ class Following extends Model
         return $this->belongsTo(User::class, 'user_id', 'id')->select([
             'id',
             'full_name',
+            'username',
             'profile_picture'
         ])->withTrashed();
     }
