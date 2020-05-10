@@ -44,7 +44,7 @@ class FollowingController extends Controller
         $intersect_followings = array_values(array_intersect($auth_followings, $user_followings));
 
         $mutuals = User::withTrashed()
-            ->select('id', 'full_name', 'profile_picture')
+            ->select('id', 'full_name', 'username', 'profile_picture')
             ->whereIn('id', $intersect_followings)
             ->orderBy('created_at', 'desc')
             ->paginate(30);
