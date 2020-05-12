@@ -70,7 +70,9 @@ class ReviewController extends Controller
     public function showSelfReviews(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
 
-        $reviews = Review::where([
+        $reviews = Review::with([
+            'user'
+        ])->where([
             'user_id' => $auth_uid,
             'tmdb_id' => $tmdb_id
         ])->orderBy('created_at', 'desc')
