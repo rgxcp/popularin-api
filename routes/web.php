@@ -26,7 +26,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('film/{film_id}/favorites/from/following', 'FavoriteController@showFavoritesFromFollowing');
     $router->get('user/{user_id}/favorites', 'FavoriteController@shows');
     $router->post('favorite', 'FavoriteController@create');
-    $router->delete('favorite/{id}', 'FavoriteController@delete');
+    $router->delete('favorite/{film_id}', 'FavoriteController@delete');
 
     $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->get('film/{tmdb_id}/self', 'FilmController@showSelf');
@@ -70,5 +70,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('film/{film_id}/watchlists/from/following', 'WatchlistController@showWatchlistsFromFollowing');
     $router->get('user/{user_id}/watchlists', 'WatchlistController@shows');
     $router->post('watchlist', 'WatchlistController@create');
-    $router->delete('watchlist/{id}', 'WatchlistController@delete');
+    $router->delete('watchlist/{film_id}', 'WatchlistController@delete');
 });

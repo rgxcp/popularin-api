@@ -114,7 +114,7 @@ class FavoriteController extends Controller
         }
     }
 
-    public function delete(Request $request, $id) {
+    public function delete(Request $request, $film_id) {
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
         
@@ -126,7 +126,7 @@ class FavoriteController extends Controller
         if ($auth == true) {
             Favorite::where([
                 'user_id' => $auth_uid,
-                'tmdb_id' => $request['tmdb_id']
+                'tmdb_id' => $film_id
             ])->firstOrFail()
               ->delete();
             
