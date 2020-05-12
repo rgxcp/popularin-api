@@ -115,16 +115,20 @@ class FavoriteController extends Controller
     }
 
     public function delete(Request $request, $id) {
-        $auth_uid = Favorite::select('user_id')->where('id', $id)->firstOrFail();
+        $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
         
         $auth = User::where([
-            'id' => $auth_uid['user_id'],
+            'id' => $auth_uid,
             'token' => $auth_token
         ])->exists();
         
         if ($auth == true) {
-            Favorite::findOrFail($id)->delete();
+            Favorite::where([
+                'user_id' => $auth_uid,
+                'tmdb_id' => $request['tmdb_id']
+            ])->firstOrFail()
+              ->delete();
             
             return response()->json([
                 'status' => 404,
