@@ -139,6 +139,7 @@ class FilmController extends Controller
         }
     }
 
+    /*
     public function create(Request $request) {
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
@@ -184,6 +185,7 @@ class FilmController extends Controller
             ]);
         }
     }
+    */
 
     public function update(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');

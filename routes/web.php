@@ -30,7 +30,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('film/{tmdb_id}', 'FilmController@show');
     $router->get('film/{tmdb_id}/self', 'FilmController@showSelf');
-    $router->post('film', 'FilmController@create');
+    // $router->post('film', 'FilmController@create');
     $router->put('film/{tmdb_id}', 'FilmController@update');
     $router->delete('film/{tmdb_id}', 'FilmController@delete');
 

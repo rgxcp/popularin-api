@@ -6,11 +6,14 @@ use App\Favorite;
 use App\Film;
 use App\Following;
 use App\User;
+use App\Http\Traits\FilmTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class FavoriteController extends Controller
 {
+    use FilmTrait;
+
     public function showFavoritesFromAll($tmdb_id) {
         $favorites = Favorite::with([
             'user'
@@ -70,6 +73,12 @@ class FavoriteController extends Controller
         if ($auth == true) {
             $tmdb_id = $request['tmdb_id'];
 
+            $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+            if (!$film_exist) {
+                $film_exist = $this->addFilm($tmdb_id);
+            }
+
             $in_favorite = Favorite::where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $tmdb_id
@@ -92,8 +101,6 @@ class FavoriteController extends Controller
                         'result' => $validator->errors()->all()
                     ]);
                 } else {
-                    $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
-
                     Favorite::create([
                         'user_id' => $auth_uid,
                         'tmdb_id' => $tmdb_id

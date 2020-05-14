@@ -9,12 +9,15 @@ use App\Like;
 use App\Review;
 use App\User;
 use App\Watchlist;
+use App\Http\Traits\FilmTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
+    use FilmTrait;
+
     public function showFilmReviewsFromAll($tmdb_id) {
         $reviews = Review::with([
             'user'
@@ -147,6 +150,14 @@ class ReviewController extends Controller
         ])->exists();
         
         if ($auth == true) {
+            $tmdb_id = $request['tmdb_id'];
+
+            $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+            if (!$film_exist) {
+                $film_exist = $this->addFilm($tmdb_id);
+            }
+
             $validator = Validator::make($request->all(), [
                 'tmdb_id' => 'required|integer',
                 'rating' => 'required|numeric',
@@ -161,10 +172,6 @@ class ReviewController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                $tmdb_id = $request['tmdb_id'];
-
-                $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
-
                 $in_watchlist = Watchlist::where([
                     'user_id' => $auth_uid,
                     'tmdb_id' => $tmdb_id

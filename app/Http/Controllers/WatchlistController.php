@@ -6,11 +6,14 @@ use App\Film;
 use App\Following;
 use App\User;
 use App\Watchlist;
+use App\Http\Traits\FilmTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class WatchlistController extends Controller
 {
+    use FilmTrait;
+
     public function showWatchlistsFromAll($tmdb_id) {
         $watchlists = Watchlist::with([
             'user'
@@ -70,6 +73,12 @@ class WatchlistController extends Controller
         if ($auth == true) {
             $tmdb_id = $request['tmdb_id'];
 
+            $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+            if (!$film_exist) {
+                $film_exist = $this->addFilm($tmdb_id);
+            }
+
             $in_watchlist = Watchlist::where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $tmdb_id
@@ -92,8 +101,6 @@ class WatchlistController extends Controller
                         'result' => $validator->errors()->all()
                     ]);
                 } else {
-                    $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
-
                     Watchlist::create([
                         'user_id' => $auth_uid,
                         'tmdb_id' => $tmdb_id
