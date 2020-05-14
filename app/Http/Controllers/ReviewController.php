@@ -149,7 +149,7 @@ class ReviewController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $tmdb_id = $request['tmdb_id'];
 
             $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
@@ -177,7 +177,7 @@ class ReviewController extends Controller
                     'tmdb_id' => $tmdb_id
                 ])->exists();
         
-                if ($in_watchlist == true) {
+                if ($in_watchlist) {
                     Watchlist::where([
                         'user_id' => $auth_uid,
                         'tmdb_id' => $tmdb_id
@@ -216,7 +216,7 @@ class ReviewController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $validator = Validator::make($request->all(), [
                 'rating' => 'required|numeric',
                 'review_text' => 'required|string',
@@ -258,7 +258,7 @@ class ReviewController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Review::findOrFail($id)->delete();
 
             return response()->json([

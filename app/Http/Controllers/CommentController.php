@@ -33,7 +33,7 @@ class CommentController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $validator = Validator::make($request->all(), [
                 'review_id' => 'required|integer',
                 'comment_text' => 'required|string'
@@ -83,7 +83,7 @@ class CommentController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Comment::findOrFail($id)->delete();
 
             return response()->json([

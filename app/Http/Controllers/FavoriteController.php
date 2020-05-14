@@ -70,7 +70,7 @@ class FavoriteController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $tmdb_id = $request['tmdb_id'];
 
             $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
@@ -84,7 +84,7 @@ class FavoriteController extends Controller
                 'tmdb_id' => $tmdb_id
             ])->exists();
 
-            if ($in_favorite == true) {
+            if ($in_favorite) {
                 return response()->json([
                     'status' => 646,
                     'message' => 'Already Favorited'
@@ -130,7 +130,7 @@ class FavoriteController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Favorite::where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $film_id

@@ -47,7 +47,7 @@ class UserController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $self = User::findOrFail($auth_uid);
             
             return response()->json([
@@ -178,7 +178,7 @@ class UserController extends Controller
                 'password' => HASH('SHA256', $request['password'])
             ])->exists();
     
-            if ($auth == true) {
+            if ($auth) {
                 User::where('username', $username)->update([
                     'token' => HASH('SHA256', Str::random(100))
                 ]);
@@ -208,7 +208,7 @@ class UserController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             User::findOrFail($auth_uid)->update([
                 'token' => null
             ]);
@@ -233,7 +233,7 @@ class UserController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $validator = Validator::make($request->all(), [
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
@@ -292,7 +292,7 @@ class UserController extends Controller
                 'password' => HASH('SHA256', $request['current_password'])
             ])->exists();
 
-            if ($auth == true) {
+            if ($auth) {
                 User::findOrFail($id)->update([
                     'password' => HASH('SHA256', $request['confirm_password'])
                 ]);
@@ -318,7 +318,7 @@ class UserController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             User::findOrFail($id)->delete();
             
             return response()->json([

@@ -97,7 +97,7 @@ class FilmController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $last_rate = Review::select('rating')->where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $tmdb_id
@@ -149,7 +149,7 @@ class FilmController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $validator = Validator::make($request->all(), [
                 'tmdb_id' => 'required|integer|unique:films',
                 'genre_id' => 'required|integer',
@@ -196,7 +196,7 @@ class FilmController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $validator = Validator::make($request->all(), [
                 'overview' => 'required|string'
             ]);
@@ -235,7 +235,7 @@ class FilmController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Film::where('tmdb_id', $tmdb_id)->firstOrFail()->update([
                 'overview' => null,
                 'user_id' => null

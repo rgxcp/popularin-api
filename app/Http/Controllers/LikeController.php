@@ -52,13 +52,13 @@ class LikeController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $already_liked = Like::where([
                 'user_id' => $auth_uid,
                 'review_id' => $review_id
             ])->exists();
 
-            if ($already_liked == true) {
+            if ($already_liked) {
                 return response()->json([
                     'status' => 666,
                     'message' => 'Already Liked'
@@ -91,7 +91,7 @@ class LikeController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Like::where('review_id', $review_id)->firstOrFail()->delete();
             
             return response()->json([

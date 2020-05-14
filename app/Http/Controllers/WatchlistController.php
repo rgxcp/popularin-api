@@ -70,7 +70,7 @@ class WatchlistController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             $tmdb_id = $request['tmdb_id'];
 
             $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
@@ -84,7 +84,7 @@ class WatchlistController extends Controller
                 'tmdb_id' => $tmdb_id
             ])->exists();
 
-            if ($in_watchlist == true) {
+            if ($in_watchlist) {
                 return response()->json([
                     'status' => 676,
                     'message' => 'Already Watchlisted'
@@ -130,7 +130,7 @@ class WatchlistController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Watchlist::where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $film_id

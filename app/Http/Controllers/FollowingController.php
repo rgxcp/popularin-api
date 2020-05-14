@@ -65,7 +65,7 @@ class FollowingController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             User::findOrFail($user_id);
 
             $already_followed = Following::where([
@@ -78,7 +78,7 @@ class FollowingController extends Controller
                     'status' => 636,
                     'message' => 'Can\'t Follow Self'
                 ]);
-            } else if ($already_followed == true) {
+            } else if ($already_followed) {
                 return response()->json([
                     'status' => 656,
                     'message' => 'Already Followed'
@@ -111,7 +111,7 @@ class FollowingController extends Controller
             'token' => $auth_token
         ])->exists();
         
-        if ($auth == true) {
+        if ($auth) {
             Following::where([
                 'user_id' => $auth_uid,
                 'following_id' => $user_id
