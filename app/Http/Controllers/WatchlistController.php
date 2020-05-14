@@ -73,12 +73,6 @@ class WatchlistController extends Controller
         if ($auth) {
             $tmdb_id = $request['tmdb_id'];
 
-            $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
-
-            if (!$film_exist) {
-                $film_exist = $this->addFilm($tmdb_id);
-            }
-
             $in_watchlist = Watchlist::where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $tmdb_id
@@ -101,6 +95,12 @@ class WatchlistController extends Controller
                         'result' => $validator->errors()->all()
                     ]);
                 } else {
+                    $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+                    if (!$film_exist) {
+                        $film_exist = $this->addFilm($tmdb_id);
+                    }
+                    
                     Watchlist::create([
                         'user_id' => $auth_uid,
                         'tmdb_id' => $tmdb_id

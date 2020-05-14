@@ -152,12 +152,6 @@ class ReviewController extends Controller
         if ($auth) {
             $tmdb_id = $request['tmdb_id'];
 
-            $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
-
-            if (!$film_exist) {
-                $film_exist = $this->addFilm($tmdb_id);
-            }
-
             $validator = Validator::make($request->all(), [
                 'tmdb_id' => 'required|integer',
                 'rating' => 'required|numeric',
@@ -172,6 +166,12 @@ class ReviewController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
+                $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+                if (!$film_exist) {
+                    $film_exist = $this->addFilm($tmdb_id);
+                }
+                
                 $in_watchlist = Watchlist::where([
                     'user_id' => $auth_uid,
                     'tmdb_id' => $tmdb_id
