@@ -23,7 +23,7 @@ class FilmController extends Controller
             'favorites' => Favorite::where('tmdb_id', $tmdb_id)->count(),
             'reviews' => Review::where('tmdb_id', $tmdb_id)->count(),
             'watchlists' => Watchlist::where('tmdb_id', $tmdb_id)->count(),
-            'average_rating' => Review::where('tmdb_id', $tmdb_id)->avg('rating'),
+            'average_rating' => Review::where('tmdb_id', $tmdb_id)->avg('rating') == null ? 0 : Review::where('tmdb_id', $tmdb_id)->avg('rating'),
             'rate_0.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 0.5)->count(),
             'rate_1.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 1)->count(),
             'rate_1.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 1.5)->count(),
