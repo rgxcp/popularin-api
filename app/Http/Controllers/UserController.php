@@ -8,6 +8,7 @@ use App\Review;
 use App\User;
 use App\Watchlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -146,8 +147,8 @@ class UserController extends Controller
                 'username' => $request['username'],
                 'email' => $request['email'],
                 'profile_picture' => $profile_picture,
-                'password' => HASH('SHA256', $request['password']),
-                'token' => HASH('SHA256', Str::random(100))
+                'password' => Hash::make($request['password']),
+                'token' => Str::random(100)
             ]);
     
             return response()->json([
@@ -171,20 +172,14 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $username = $request['username'];
+            $user = User::where('username', $request['username'])->firstOrFail();
+            $auth = Hash::check($request['password'], $user->password);
 
-            $auth = User::where([
-                'username' => $username,
-                'password' => HASH('SHA256', $request['password'])
-            ])->exists();
-    
             if ($auth) {
-                User::where('username', $username)->update([
-                    'token' => HASH('SHA256', Str::random(100))
+                $user->update([
+                    'token' => Str::random(100)
                 ]);
-    
-                $user = User::select('id', 'token')->firstWhere('username', $username);
-    
+
                 return response()->json([
                     'status' => 515,
                     'message' => 'User Signed In',
@@ -287,14 +282,12 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $auth = User::where([
-                'id' => $id,
-                'password' => HASH('SHA256', $request['current_password'])
-            ])->exists();
+            $user = User::where('id', $id)->firstOrFail();
+            $auth = Hash::check($request['current_password'], $user->password);
 
             if ($auth) {
-                User::findOrFail($id)->update([
-                    'password' => HASH('SHA256', $request['confirm_password'])
+                $user->update([
+                    'password' => Hash::make($request['confirm_password'])
                 ]);
                     
                 return response()->json([
