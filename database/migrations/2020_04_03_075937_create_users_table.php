@@ -22,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('profile_picture');
             $table->string('password');
-            $table->string('token')->nullable();
+            $table->string('token', 100)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -35,8 +35,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('users');
     }
 }

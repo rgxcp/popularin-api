@@ -15,13 +15,11 @@ class CreateFilmsTable extends Migration
     {
         Schema::create('films', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('tmdb_id')->unique();
-            $table->smallInteger('genre_id');
+            $table->bigInteger('tmdb_id')->unsigned()->unique();
+            $table->smallInteger('genre_id')->unsigned();
             $table->string('title');
             $table->date('release_date');
             $table->string('poster');
-            $table->longText('overview')->nullable();
-            $table->bigInteger('user_id')->nullable();
             $table->timestamps();
         });
     }
@@ -33,8 +31,6 @@ class CreateFilmsTable extends Migration
      */
     public function down()
     {
-        Schema::table('films', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('films');
     }
 }

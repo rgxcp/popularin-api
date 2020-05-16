@@ -15,8 +15,8 @@ class CreateLikesTable extends Migration
     {
         Schema::create('likes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id');
-            $table->bigInteger('review_id');
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('review_id')->unsigned();
             $table->timestamps();
         });
     }

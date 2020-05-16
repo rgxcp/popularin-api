@@ -15,8 +15,8 @@ class CreateFavoritesTable extends Migration
     {
         Schema::create('favorites', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id');
-            $table->bigInteger('tmdb_id');
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('tmdb_id')->unsigned();
             $table->timestamps();
         });
     }
@@ -28,8 +28,6 @@ class CreateFavoritesTable extends Migration
      */
     public function down()
     {
-        Schema::table('favorites', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('favorites');
     }
 }

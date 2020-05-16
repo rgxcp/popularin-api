@@ -15,9 +15,9 @@ class CreateCommentsTable extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id');
-            $table->bigInteger('review_id');
-            $table->longText('comment_text');
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('review_id')->unsigned();
+            $table->string('comment_detail', 300);
             $table->date('comment_date');
             $table->timestamps();
             $table->softDeletes();
@@ -31,8 +31,6 @@ class CreateCommentsTable extends Migration
      */
     public function down()
     {
-        Schema::table('comments', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('comments');
     }
 }

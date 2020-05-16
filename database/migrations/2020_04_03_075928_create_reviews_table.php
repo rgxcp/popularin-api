@@ -15,10 +15,10 @@ class CreateReviewsTable extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id');
-            $table->bigInteger('tmdb_id');
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('tmdb_id')->unsigned();
             $table->double('rating');
-            $table->longText('review_text');
+            $table->longText('review_detail');
             $table->date('review_date');
             $table->date('watch_date');
             $table->timestamps();
@@ -33,8 +33,6 @@ class CreateReviewsTable extends Migration
      */
     public function down()
     {
-        Schema::table('reviews', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('reviews');
     }
 }
