@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Following;
 use App\Like;
-use App\Review;
 use App\User;
 use Illuminate\Http\Request;
 
@@ -15,7 +14,7 @@ class LikeController extends Controller
             'user'
         ])->where('review_id', $review_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
         
         return response()->json([
             'status' => isset($likes[0]) ? 101 : 606,
@@ -25,16 +24,16 @@ class LikeController extends Controller
     }
 
     public function showLikesFromFollowing(Request $request, $review_id) {
-        $auth_uid = $request->header('auth_uid');
+        $authID = $request->header('Auth-ID');
 
-        $followings = Following::select('following_id')->where('user_id', $auth_uid);
+        $followings = Following::select('following_id')->where('user_id', $authID);
 
         $likes = Like::with([
             'user'
         ])->where('review_id', $review_id)
           ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
         
         return response()->json([
             'status' => isset($likes[0]) ? 101 : 606,
@@ -44,28 +43,28 @@ class LikeController extends Controller
     }
 
     public function create(Request $request, $review_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
-            $already_liked = Like::where([
-                'user_id' => $auth_uid,
+        if ($isAuth) {
+            $isLiked = Like::where([
+                'user_id' => $authID,
                 'review_id' => $review_id
             ])->exists();
 
-            if ($already_liked) {
+            if ($isLiked) {
                 return response()->json([
                     'status' => 666,
                     'message' => 'Already Liked'
                 ]);
             } else {
                 Like::create([
-                    'user_id' => $auth_uid,
+                    'user_id' => $authID,
                     'review_id' => $review_id
                 ]);
                 
@@ -83,16 +82,16 @@ class LikeController extends Controller
     }
 
     public function delete(Request $request, $review_id) {
-        $auth_uid = Like::select('user_id')->where('review_id', $review_id)->firstOrFail();
-        $auth_token = $request->header('auth_token');
+        $like = Like::where('review_id', $review_id)->firstOrFail();
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid['user_id'],
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $like->user_id,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
-            Like::where('review_id', $review_id)->firstOrFail()->delete();
+        if ($isAuth) {
+            $like->delete();
             
             return response()->json([
                 'status' => 404,
