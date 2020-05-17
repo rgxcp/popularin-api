@@ -36,16 +36,16 @@ class UserController extends Controller
     }
 
     public function self(Request $request) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
 
         $isAuth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
         if ($isAuth) {
-            $self = User::findOrFail($auth_uid);
+            $self = User::findOrFail($authID);
             
             return response()->json([
                 'status' => 101,
@@ -63,7 +63,7 @@ class UserController extends Controller
     public function show(Request $request, $id) {
         Carbon::setLocale('id');
 
-        $auth_uid = $request->header('auth_uid');
+        $authID = $request->header('Auth-ID');
 
         $user = User::select(
             'id',
@@ -91,8 +91,8 @@ class UserController extends Controller
 
         $metadata = collect([
             'joined_since' => $user->created_at->diffForHumans(),
-            'is_following' => Following::where('user_id', $auth_uid)->where('following_id', $id)->exists(),
-            'is_follower' => Following::where('user_id', $id)->where('following_id', $auth_uid)->exists(),
+            'is_following' => Following::where('user_id', $authID)->where('following_id', $id)->exists(),
+            'is_follower' => Following::where('user_id', $id)->where('following_id', $authID)->exists(),
             'total_following' => Following::where('user_id', $id)->count(),
             'total_follower' => Following::where('following_id', $id)->count(),
             'total_favorite' => Favorite::where('user_id', $id)->count(),
@@ -229,16 +229,16 @@ class UserController extends Controller
     }
 
     public function signout(Request $request) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
         $isAuth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
         if ($isAuth) {
-            User::findOrFail($auth_uid)->update([
+            User::findOrFail($authID)->update([
                 'token' => null
             ]);
             
@@ -255,11 +255,11 @@ class UserController extends Controller
     }
 
     public function update(Request $request, $id) {
-        $auth_token = $request->header('auth_token');
+        $authToken = $request->header('Auth-Token');
 
         $isAuth = User::where([
             'id' => $id,
-            'token' => $auth_token
+            'token' => $authToken
         ])->exists();
         
         if ($isAuth) {

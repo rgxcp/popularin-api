@@ -14,33 +14,33 @@ use Illuminate\Support\Facades\Validator;
 class FilmController extends Controller
 {
     public function self(Request $request, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
 
         $isAuth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
         if ($isAuth) {
             $last_rate = Review::select('rating')->where([
-                'user_id' => $auth_uid,
+                'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ])->latest()
               ->first();
             
             $in_favorite = Favorite::where([
-                'user_id' => $auth_uid,
+                'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ])->exists();
 
             $in_review = Review::where([
-                'user_id' => $auth_uid,
+                'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ])->exists();
     
             $in_watchlist = Watchlist::where([
-                'user_id' => $auth_uid,
+                'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ])->exists();
 
