@@ -8,47 +8,43 @@ use App\Review;
 use App\User;
 use App\Watchlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function search(Request $request) {
-        if ($request->filled('query')) {
-            $query = $request->input('query').'%';
+    public function search(Request $request, $query) {
+        $users = User::select(
+            'id',
+            'full_name',
+            'username',
+            'profile_picture'
+        )->where('first_name', 'like', $query)
+         ->orWhere('last_name', 'like', $query)
+         ->orWhere('full_name', 'like', $query)
+         ->orWhere('username', 'like', $query)
+         ->orderBy('created_at', 'desc')
+         ->paginate(50);
 
-            $users = User::select('id', 'full_name', 'username', 'profile_picture')
-                ->where('first_name', 'like', $query)
-                ->orWhere('last_name', 'like', $query)
-                ->orWhere('full_name', 'like', $query)
-                ->orWhere('username', 'like', $query)
-                ->orderBy('created_at', 'desc')
-                ->paginate(30);
-            
-            return response()->json([
-                'status' => 101,
-                'message' => 'Request Retrieved',
-                'result' => $users
-            ]);
-        } else {
-            return response()->json([
-                'status' => 606,
-                'message' => 'Request Not Found'
-            ]);
-        }
+        return response()->json([
+            'status' => 101,
+            'message' => 'Request Retrieved',
+            'result' => $users
+        ]);
     }
 
     public function self(Request $request) {
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
 
-        $auth = User::where([
+        $isAuth = User::where([
             'id' => $auth_uid,
             'token' => $auth_token
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             $self = User::findOrFail($auth_uid);
             
             return response()->json([
@@ -65,18 +61,28 @@ class UserController extends Controller
     }
 
     public function show(Request $request, $id) {
+        Carbon::setLocale('id');
+
         $auth_uid = $request->header('auth_uid');
 
-        $user = User::select('id', 'full_name', 'username', 'profile_picture')->findOrFail($id);
+        $user = User::select(
+            'id',
+            'first_name',
+            'last_name',
+            'full_name',
+            'username',
+            'profile_picture',
+            'created_at'
+        )->findOrFail($id);
 
-        $favorites = Favorite::with([
+        $recent_favorites = Favorite::with([
             'film'
         ])->where('user_id', $id)
           ->orderBy('created_at', 'desc')
           ->take(5)
           ->get();
 
-        $reviews = Review::with([
+        $recent_reviews = Review::with([
             'film'
         ])->where('user_id', $id)
           ->orderBy('created_at', 'desc')
@@ -84,28 +90,31 @@ class UserController extends Controller
           ->get();
 
         $metadata = collect([
+            'joined_since' => $user->created_at->diffForHumans(),
             'is_following' => Following::where('user_id', $auth_uid)->where('following_id', $id)->exists(),
             'is_follower' => Following::where('user_id', $id)->where('following_id', $auth_uid)->exists(),
-            'favorites' => Favorite::where('user_id', $id)->count(),
-            'reviews' => Review::where('user_id', $id)->count(),
-            'watchlists' => Watchlist::where('user_id', $id)->count(),
-            'followings' => Following::where('user_id', $id)->count(),
-            'followers' => Following::where('following_id', $id)->count(),
-            'rate_0.5' => Review::where('user_id', $id)->where('rating', 0.5)->count(),
-            'rate_1.0' => Review::where('user_id', $id)->where('rating', 1)->count(),
-            'rate_1.5' => Review::where('user_id', $id)->where('rating', 1.5)->count(),
-            'rate_2.0' => Review::where('user_id', $id)->where('rating', 2)->count(),
-            'rate_2.5' => Review::where('user_id', $id)->where('rating', 2.5)->count(),
-            'rate_3.0' => Review::where('user_id', $id)->where('rating', 3)->count(),
-            'rate_3.5' => Review::where('user_id', $id)->where('rating', 3.5)->count(),
-            'rate_4.0' => Review::where('user_id', $id)->where('rating', 4)->count(),
-            'rate_4.5' => Review::where('user_id', $id)->where('rating', 4.5)->count(),
-            'rate_5.0' => Review::where('user_id', $id)->where('rating', 5)->count()
+            'total_following' => Following::where('user_id', $id)->count(),
+            'total_follower' => Following::where('following_id', $id)->count(),
+            'total_favorite' => Favorite::where('user_id', $id)->count(),
+            'total_review' => Review::where('user_id', $id)->count(),
+            'total_watchlist' => Watchlist::where('user_id', $id)->count()
+            /*
+            'total_rate_05' => Review::where(['user_id' => $id, 'rating' => 0.5])->count(),
+            'total_rate_10' => Review::where(['user_id' => $id, 'rating' => 1.0])->count(),
+            'total_rate_15' => Review::where(['user_id' => $id, 'rating' => 1.5])->count(),
+            'total_rate_20' => Review::where(['user_id' => $id, 'rating' => 2.0])->count(),
+            'total_rate_25' => Review::where(['user_id' => $id, 'rating' => 2.5])->count(),
+            'total_rate_30' => Review::where(['user_id' => $id, 'rating' => 3.0])->count(),
+            'total_rate_35' => Review::where(['user_id' => $id, 'rating' => 3.5])->count(),
+            'total_rate_40' => Review::where(['user_id' => $id, 'rating' => 4.0])->count(),
+            'total_rate_45' => Review::where(['user_id' => $id, 'rating' => 4.5])->count(),
+            'total_rate_50' => Review::where(['user_id' => $id, 'rating' => 5.0])->count()
+            */
         ]);
 
         $activity = collect([
-            'favorites' => isset($favorites[0]) ? $favorites : null,
-            'reviews' => isset($reviews[0]) ? $reviews : null
+            'recent_favorites' => isset($recent_favorites[0]) ? $recent_favorites : null,
+            'recent_reviews' => isset($recent_reviews[0]) ? $recent_reviews : null
         ]);
 
         $collection = collect([
@@ -123,11 +132,24 @@ class UserController extends Controller
 
     public function signup(Request $request) {
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'username' => 'required|string|alpha_dash|min:5|max:255|unique:users,username',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|max:255|different:username'
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'username' => 'required|alpha_dash|min:5|unique:users,username',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|different:username'
+        ],[
+            'first_name.required' => 'Nama depan harus di isi',
+            'last_name.required' => 'Nama belakang harus di isi',
+            'username.required' => 'Username harus di isi',
+            'email.required' => 'Alamat email harus di isi',
+            'password.required' => 'Kata sandi harus di isi',
+            'alpha_dash' => 'Username tidak bisa mengandung spasi',
+            'email' => 'Format alamat email tidak sesuai',
+            'username.min' => 'Username minimal 5 karakter',
+            'password.min' => 'Kata sandi minimal 8 karakter',
+            'username.unique' => 'Username tersebut sudah digunakan',
+            'email.unique' => 'Alamat email tersebut sudah digunakan',
+            'different' => 'Kata sandi dan username harus berbeda'
         ]);
 
         if ($validator->fails()) {
@@ -138,7 +160,7 @@ class UserController extends Controller
             ]);
         } else {
             $full_name = $request['first_name'].' '.$request['last_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=128';
+            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
     
             $user = User::create([
                 'first_name' => $request['first_name'],
@@ -161,8 +183,11 @@ class UserController extends Controller
 
     public function signin(Request $request) {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255',
-            'password' => 'required|string|max:255'
+            'username' => 'required',
+            'password' => 'required'
+        ],[
+            'username.required' => 'Username harus di isi',
+            'password.required' => 'Kata sandi harus di isi'
         ]);
 
         if ($validator->fails()) {
@@ -172,10 +197,19 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $user = User::where('username', $request['username'])->firstOrFail();
-            $auth = Hash::check($request['password'], $user->password);
+            $user = User::select(
+                'id',
+                'token',
+                'password'
+            )->where('username', $request['username'])
+             ->firstOrFail();
 
-            if ($auth) {
+            $isAuth = Hash::check(
+                $request['password'],
+                $user->password
+            );
+
+            if ($isAuth) {
                 $user->update([
                     'token' => Str::random(100)
                 ]);
@@ -198,12 +232,12 @@ class UserController extends Controller
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
         
-        $auth = User::where([
+        $isAuth = User::where([
             'id' => $auth_uid,
             'token' => $auth_token
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             User::findOrFail($auth_uid)->update([
                 'token' => null
             ]);
@@ -223,17 +257,27 @@ class UserController extends Controller
     public function update(Request $request, $id) {
         $auth_token = $request->header('auth_token');
 
-        $auth = User::where([
+        $isAuth = User::where([
             'id' => $id,
             'token' => $auth_token
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             $validator = Validator::make($request->all(), [
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'username' => 'required|string|alpha_dash|min:5|max:255|unique:users,username,'.$id,
-                'email' => 'required|email|max:255|unique:users,email,'.$id
+                'first_name' => 'required',
+                'last_name' => 'required',
+                'username' => 'required|alpha_dash|min:5|unique:users,username,'.$id,
+                'email' => 'required|email|unique:users,email,'.$id
+            ],[
+                'first_name.required' => 'Nama depan harus di isi',
+                'last_name.required' => 'Nama belakang harus di isi',
+                'username.required' => 'Username harus di isi',
+                'email.required' => 'Alamat email harus di isi',
+                'alpha_dash' => 'Username tidak bisa mengandung spasi',
+                'email' => 'Format alamat email tidak sesuai',
+                'min' => 'Username minimal 5 karakter',
+                'username.unique' => 'Username tersebut sudah digunakan',
+                'email.unique' => 'Alamat email tersebut sudah digunakan'
             ]);
     
             if ($validator->fails()) {
@@ -244,20 +288,24 @@ class UserController extends Controller
                 ]);
             } else {
                 $full_name = $request['first_name'].' '.$request['last_name'];
-                $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=128';
+                $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
                 
-                User::findOrFail($id)->update([
+                $user = User::findOrFail($id);
+                
+                $user->update([
                     'first_name' => $request['first_name'],
                     'last_name' => $request['last_name'],
                     'full_name' => $full_name,
                     'username' => $request['username'],
                     'email' => $request['email'],
-                    'profile_picture' => $profile_picture
+                    'profile_picture' => $profile_picture,
+                    'token' => Str::random(100)
                 ]);
                     
                 return response()->json([
                     'status' => 303,
-                    'message' => 'Request Updated'
+                    'message' => 'Request Updated',
+                    'result' => $user
                 ]);
             }
         } else {
@@ -270,9 +318,16 @@ class UserController extends Controller
 
     public function updatePassword(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'current_password' => 'required|string|max:255',
-            'new_password' => 'required|string|min:8|max:255',
-            'confirm_password' => 'required|string|same:new_password'
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|different:current_password',
+            'confirm_password' => 'required|same:new_password'
+        ],[
+            'current_password.required' => 'Kata sandi lama harus di isi',
+            'new_password.required' => 'Kata sandi baru harus di isi',
+            'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',
+            'min' => 'Kata sandi baru minimal 8 karakter',
+            'different' => 'Kata sandi baru dan lama harus berbeda',
+            'same' => 'Kata sandi baru dan konfirmasi tidak sama'
         ]);
 
         if ($validator->fails()) {
@@ -282,17 +337,27 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $user = User::where('id', $id)->firstOrFail();
-            $auth = Hash::check($request['current_password'], $user->password);
+            $user = User::select(
+                'id',
+                'token',
+                'password'
+            )->findOrFail($id);
 
-            if ($auth) {
+            $isAuth = Hash::check(
+                $request['current_password'],
+                $user->password
+            );
+
+            if ($isAuth) {
                 $user->update([
-                    'password' => Hash::make($request['confirm_password'])
+                    'password' => Hash::make($request['confirm_password']),
+                    'token' => Str::random(100)
                 ]);
                     
                 return response()->json([
                     'status' => 303,
-                    'message' => 'Request Updated'
+                    'message' => 'Request Updated',
+                    'result' => $user
                 ]);
             } else {
                 return response()->json([
@@ -303,16 +368,21 @@ class UserController extends Controller
         }
     }
 
+    /*
     public function delete(Request $request, $id) {
-        $auth_token = $request->header('auth_token');
+        $user = User::findOrFail($id);
 
-        $auth = User::where([
-            'id' => $id,
-            'token' => $auth_token
-        ])->exists();
+        $isAuth = Hash::check(
+            $request['password'],
+            $user->password
+        );
         
-        if ($auth) {
-            User::findOrFail($id)->delete();
+        if ($isAuth) {
+            $user->update([
+                'token' => null
+            ]);
+            
+            $user->delete();
             
             return response()->json([
                 'status' => 404,
@@ -325,4 +395,5 @@ class UserController extends Controller
             ]);
         }
     }
+    */
 }
