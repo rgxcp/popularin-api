@@ -20,7 +20,7 @@ class DeveloperController extends Controller
             646 => 'Already Favorited',
             656 => 'Already Followed',
             666 => 'Already Liked',
-            676 => 'Already Watchlisted',
+            676 => 'Already Watchlisted'
         ]);
     }
 }
