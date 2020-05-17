@@ -14,12 +14,12 @@ class WatchlistController extends Controller
 {
     use FilmTrait;
 
-    public function showWatchlistsFromAll($tmdb_id) {
+    public function showFilmWatchlistsFromAll($tmdb_id) {
         $watchlists = Watchlist::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
@@ -28,17 +28,17 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showWatchlistsFromFollowing(Request $request, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
+    public function showFilmWatchlistsFromFollowing(Request $request, $tmdb_id) {
+        $authID = $request->header('Auth-ID');
 
-        $followings = Following::select('following_id')->where('user_id', $auth_uid);
+        $followings = Following::select('following_id')->where('user_id', $authID);
 
         $watchlists = Watchlist::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
           ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
@@ -47,12 +47,12 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function shows($user_id) {
+    public function showUserWatchlists($user_id) {
         $watchlists = Watchlist::with([
             'film'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
@@ -62,30 +62,33 @@ class WatchlistController extends Controller
     }
 
     public function create(Request $request) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             $tmdb_id = $request['tmdb_id'];
 
-            $in_watchlist = Watchlist::where([
-                'user_id' => $auth_uid,
+            $inWatchlist = Watchlist::where([
+                'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ])->exists();
 
-            if ($in_watchlist) {
+            if ($inWatchlist) {
                 return response()->json([
                     'status' => 676,
                     'message' => 'Already Watchlisted'
                 ]);
             } else {
                 $validator = Validator::make($request->all(), [
-                    'tmdb_id' => 'required|integer'
+                    'tmdb_id' => 'required|numeric'
+                ],[
+                    'required' => 'TMDb ID harus di isi',
+                    'numeric' => 'Format TMDb ID harus berupa numerik'
                 ]);
         
                 if ($validator->fails()) {
@@ -95,21 +98,20 @@ class WatchlistController extends Controller
                         'result' => $validator->errors()->all()
                     ]);
                 } else {
-                    $film_exist = Film::where('tmdb_id', $tmdb_id)->exists();
+                    $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
 
-                    if (!$film_exist) {
-                        $film_exist = $this->addFilm($tmdb_id);
+                    if (!$filmExist) {
+                        $this->addFilm($tmdb_id);
                     }
                     
                     Watchlist::create([
-                        'user_id' => $auth_uid,
+                        'user_id' => $authID,
                         'tmdb_id' => $tmdb_id
                     ]);
                     
                     return response()->json([
                         'status' => 202,
-                        'message' => 'Request Created',
-                        'film_exist' => $film_exist
+                        'message' => 'Request Created'
                     ]);
                 }
             }
@@ -121,19 +123,19 @@ class WatchlistController extends Controller
         }
     }
 
-    public function delete(Request $request, $film_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+    public function delete(Request $request, $tmdb_id) {
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             Watchlist::where([
-                'user_id' => $auth_uid,
-                'tmdb_id' => $film_id
+                'user_id' => $authID,
+                'tmdb_id' => $tmdb_id
             ])->firstOrFail()
               ->delete();
             
