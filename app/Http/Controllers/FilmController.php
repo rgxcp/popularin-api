@@ -13,91 +13,16 @@ use Illuminate\Support\Facades\Validator;
 
 class FilmController extends Controller
 {
-    public function show(Request $request, $tmdb_id) {
-        $film = Film::with([
-            'user'
-        ])->where('tmdb_id', $tmdb_id)
-          ->firstOrFail();
-        
-        $metadata = collect([
-            'favorites' => Favorite::where('tmdb_id', $tmdb_id)->count(),
-            'reviews' => Review::where('tmdb_id', $tmdb_id)->count(),
-            'watchlists' => Watchlist::where('tmdb_id', $tmdb_id)->count(),
-            'average_rating' => Review::where('tmdb_id', $tmdb_id)->avg('rating') == null ? 0 : Review::where('tmdb_id', $tmdb_id)->avg('rating'),
-            'rate_0.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 0.5)->count(),
-            'rate_1.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 1)->count(),
-            'rate_1.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 1.5)->count(),
-            'rate_2.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 2)->count(),
-            'rate_2.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 2.5)->count(),
-            'rate_3.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 3)->count(),
-            'rate_3.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 3.5)->count(),
-            'rate_4.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 4)->count(),
-            'rate_4.5' => Review::where('tmdb_id', $tmdb_id)->where('rating', 4.5)->count(),
-            'rate_5.0' => Review::where('tmdb_id', $tmdb_id)->where('rating', 5)->count(),
-        ]);
-
-        if ($request->headers->has('auth_uid')) {
-            $auth_uid = $request->header('auth_uid');
-
-            $followings = Following::select('following_id')->where('user_id', $auth_uid);
-
-            $reviews = Review::with([
-                'user'
-            ])->select('id', 'rating', 'user_id')
-              ->where('tmdb_id', $tmdb_id)
-              ->whereIn('user_id', $followings)
-              ->orderBy('created_at', 'desc')
-              ->take(5)
-              ->get();
-            
-            $watchlists = Watchlist::with([
-                'user'
-            ])->where('tmdb_id', $tmdb_id)
-              ->whereIn('user_id', $followings)
-              ->orderBy('created_at', 'desc')
-              ->take(5)
-              ->get();
-            
-            $activity = collect([
-                'reviews' => isset($reviews[0]) ? $reviews : null,
-                'watchlists' => isset($watchlists[0]) ? $watchlists : null
-            ]);
-            
-            $collection = collect([
-                'film' => $film,
-                'metadata' => $metadata,
-                'activity' => $activity
-            ]);
-    
-            return response()->json([
-                'status' => 101,
-                'message' => 'Request Retrieved',
-                'result' => $collection
-            ]);
-        } else {
-            $collection = collect([
-                'film' => $film,
-                'metadata' => $metadata
-            ]);
-
-            return response()->json([
-                'status' => 101,
-                'message' => 'Request Retrieved',
-                'result' => $collection
-            ]);
-        }
-    }
-
-    public function showSelf(Request $request, $tmdb_id) {
+    public function self(Request $request, $tmdb_id) {
         $auth_uid = $request->header('auth_uid');
         $auth_token = $request->header('auth_token');
 
-        $auth = User::where([
+        $isAuth = User::where([
             'id' => $auth_uid,
             'token' => $auth_token
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             $last_rate = Review::select('rating')->where([
                 'user_id' => $auth_uid,
                 'tmdb_id' => $tmdb_id
@@ -139,117 +64,39 @@ class FilmController extends Controller
         }
     }
 
-    /*
-    public function create(Request $request) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
-        
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
-        ])->exists();
-        
-        if ($auth) {
-            $validator = Validator::make($request->all(), [
-                'tmdb_id' => 'required|integer|unique:films',
-                'genre_id' => 'required|integer',
-                'title' => 'required|string|max:255',
-                'release_date' => 'required|date',
-                'poster' => 'required|string|max:255'
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
-                ]);
-            } else {
-                Film::create([
-                    'tmdb_id' => $request['tmdb_id'],
-                    'genre_id' => $request['genre_id'],
-                    'title' => $request['title'],
-                    'release_date' => $request['release_date'],
-                    'poster' => $request['poster']
-                ]);
-                
-                return response()->json([
-                    'status' => 202,
-                    'message' => 'Request Created',
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
-    }
-    */
+    public function show($tmdb_id) {
+        $film = Film::where('tmdb_id', $tmdb_id)->firstOrFail();
 
-    public function update(Request $request, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $average_rating = Review::where('tmdb_id', $tmdb_id)->avg('rating');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
-        ])->exists();
-        
-        if ($auth) {
-            $validator = Validator::make($request->all(), [
-                'overview' => 'required|string'
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
-                ]);
-            } else {
-                Film::where('tmdb_id', $tmdb_id)->firstOrFail()->update([
-                    'overview' => $request['overview'],
-                    'user_id' => $auth_uid
-                ]);
-                
-                return response()->json([
-                    'status' => 303,
-                    'message' => 'Request Updated'
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
-    }
+        $metadata = collect([
+            'average_rating' => isset($average_rating) ? $average_rating : 0,
+            'total_favorite' => Favorite::where('tmdb_id', $tmdb_id)->count(),
+            'total_review' => Review::where('tmdb_id', $tmdb_id)->count(),
+            'total_watchlist' => Watchlist::where('tmdb_id', $tmdb_id)->count()
+            /*
+            'total_rate_05' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 0.5])->count(),
+            'total_rate_10' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 1.0])->count(),
+            'total_rate_15' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 1.5])->count(),
+            'total_rate_20' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 2.0])->count(),
+            'total_rate_25' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 2.5])->count(),
+            'total_rate_30' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 3.0])->count(),
+            'total_rate_35' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 3.5])->count(),
+            'total_rate_40' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 4.0])->count(),
+            'total_rate_45' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 4.5])->count(),
+            'total_rate_50' => Review::where(['tmdb_id' => $tmdb_id, 'rating' => 5.0])->count()
+            */
+        ]);
 
-    public function delete(Request $request, $tmdb_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
-        
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
-        ])->exists();
-        
-        if ($auth) {
-            Film::where('tmdb_id', $tmdb_id)->firstOrFail()->update([
-                'overview' => null,
-                'user_id' => null
-            ]);
-            
-            return response()->json([
-                'status' => 404,
-                'message' => 'Request Deleted'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        $collection = collect([
+            'film' => $film,
+            'metadata' => $metadata
+        ]);
+
+        return response()->json([
+            'status' => 101,
+            'message' => 'Request Retrieved',
+            'result' => $collection
+        ]);
     }
 }
