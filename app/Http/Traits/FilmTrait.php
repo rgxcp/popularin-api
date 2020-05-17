@@ -11,19 +11,12 @@ trait FilmTrait
         $json = file_get_contents($url);
         $data = json_decode($json, true);
 
-        $genre_id = $data['genres'][0]['id'];
-        $title = $data['original_title'];
-        $release_date = $data['release_date'];
-        $poster = $data['poster_path'];
-
         Film::create([
             'tmdb_id' => $tmdb_id,
-            'genre_id' => $genre_id,
-            'title' => $title,
-            'release_date' => $release_date,
-            'poster' => $poster
+            'genre_id' => $data['genres'][0]['id'],
+            'title' => $data['original_title'],
+            'release_date' => $data['release_date'],
+            'poster' => $data['poster_path']
         ]);
-
-        return true;
     }
 }
