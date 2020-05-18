@@ -13,7 +13,7 @@ class FollowingController extends Controller
             'following'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
 
         return response()->json([
             'status' => isset($followings[0]) ? 101 : 606,
@@ -27,7 +27,7 @@ class FollowingController extends Controller
             'follower'
         ])->where('following_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(30);
+          ->paginate(50);
 
         return response()->json([
             'status' => isset($followers[0]) ? 101 : 606,
@@ -37,17 +37,21 @@ class FollowingController extends Controller
     }
 
     public function showMutuals(Request $request, $user_id) {
-        $auth_uid = $request->header('auth_uid');
+        $authID = $request->header('Auth-ID');
 
-        $auth_followings = Following::select('following_id')->where('user_id', $auth_uid)->pluck('following_id')->toArray();
-        $user_followings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
-        $intersect_followings = array_values(array_intersect($auth_followings, $user_followings));
+        $authFollowings = Following::select('following_id')->where('user_id', $authID)->pluck('following_id')->toArray();
+        $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
+        $intersectFollowings = array_values(array_intersect($authFollowings, $userFollowings));
 
-        $mutuals = User::withTrashed()
-            ->select('id', 'full_name', 'username', 'profile_picture')
-            ->whereIn('id', $intersect_followings)
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+        $mutuals = User::select(
+            'id',
+            'full_name',
+            'username',
+            'profile_picture'
+        )->whereIn('id', $intersectFollowings)
+         ->orderBy('created_at', 'desc')
+         ->withTrashed()
+         ->paginate(50);
 
         return response()->json([
             'status' => isset($mutuals[0]) ? 101 : 606,
@@ -57,35 +61,35 @@ class FollowingController extends Controller
     }
 
     public function create(Request $request, $user_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             User::findOrFail($user_id);
 
-            $already_followed = Following::where([
-                'user_id' => $auth_uid,
+            $isFollowed = Following::where([
+                'user_id' => $authID,
                 'following_id' => $user_id
             ])->exists();
 
-            if ($auth_uid == $user_id) {
+            if ($authID == $user_id) {
                 return response()->json([
                     'status' => 636,
                     'message' => 'Can\'t Follow Self'
                 ]);
-            } else if ($already_followed) {
+            } else if ($isFollowed) {
                 return response()->json([
                     'status' => 656,
                     'message' => 'Already Followed'
                 ]);
             } else {
                 Following::create([
-                    'user_id' => $auth_uid,
+                    'user_id' => $authID,
                     'following_id' => $user_id
                 ]);
     
@@ -103,17 +107,17 @@ class FollowingController extends Controller
     }
 
     public function delete(Request $request, $user_id) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             Following::where([
-                'user_id' => $auth_uid,
+                'user_id' => $authID,
                 'following_id' => $user_id
             ])->firstOrFail()
               ->delete();
