@@ -61,7 +61,7 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function create(Request $request) {
+    public function create(Request $request, $tmdb_id) {
         $authID = $request->header('Auth-ID');
         $authToken = $request->header('Auth-Token');
         
@@ -71,8 +71,6 @@ class FavoriteController extends Controller
         ])->exists();
         
         if ($isAuth) {
-            $tmdb_id = $request['tmdb_id'];
-
             $inFavorite = Favorite::where([
                 'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
@@ -84,36 +82,21 @@ class FavoriteController extends Controller
                     'message' => 'Already Favorited'
                 ]);
             } else {
-                $validator = Validator::make($request->all(), [
-                    'tmdb_id' => 'required|numeric'
-                ],[
-                    'required' => 'TMDb ID harus di isi',
-                    'numeric' => 'Format TMDb ID harus berupa numerik'
-                ]);
-        
-                if ($validator->fails()) {
-                    return response()->json([
-                        'status' => 626,
-                        'message' => 'Validator Fails',
-                        'result' => $validator->errors()->all()
-                    ]);
-                } else {
-                    $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
+                $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
 
-                    if (!$filmExist) {
-                        $this->addFilm($tmdb_id);
-                    }
-                    
-                    Favorite::create([
-                        'user_id' => $authID,
-                        'tmdb_id' => $tmdb_id
-                    ]);
-                    
-                    return response()->json([
-                        'status' => 202,
-                        'message' => 'Request Created'
-                    ]);
+                if (!$filmExist) {
+                    $this->addFilm($tmdb_id);
                 }
+                
+                Favorite::create([
+                    'user_id' => $authID,
+                    'tmdb_id' => $tmdb_id
+                ]);
+                
+                return response()->json([
+                    'status' => 202,
+                    'message' => 'Request Created'
+                ]);
             }
         } else {
             return response()->json([
