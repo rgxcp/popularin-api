@@ -21,6 +21,10 @@ class Review extends Model
         'deleted_at'
     ];
 
+    public $appends = [
+        'timestamp'
+    ];
+
     public function film() {
         return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
@@ -33,5 +37,9 @@ class Review extends Model
             'username',
             'profile_picture'
         ])->withTrashed();
+    }
+
+    public function getTimestampAttribute() {
+        return $this->created_at->diffForHumans();
     }
 }
