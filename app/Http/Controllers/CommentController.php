@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Validator;
 class CommentController extends Controller
 {
     public function shows($review_id) {
+        Carbon::setLocale('id');
+
         $comments = Comment::with([
             'user'
         ])->where('review_id', $review_id)
           ->orderBy('created_at', 'asc')
-          ->paginate(30);
+          ->paginate(50);
 
         return response()->json([
             'status' => isset($comments[0]) ? 101 : 606,
@@ -25,18 +27,22 @@ class CommentController extends Controller
     }
 
     public function create(Request $request) {
-        $auth_uid = $request->header('auth_uid');
-        $auth_token = $request->header('auth_token');
+        Carbon::setLocale('id');
+
+        $authID = $request->header('Auth-ID');
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid,
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $authID,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
+        if ($isAuth) {
             $validator = Validator::make($request->all(), [
-                'review_id' => 'required|integer',
-                'comment_text' => 'required|string'
+                'comment_detail' => 'required|max:300'
+            ],[
+                'required' => 'Komen harus di isi',
+                'max' => 'Komen maksimal 300 karakter'
             ]);
     
             if ($validator->fails()) {
@@ -47,13 +53,17 @@ class CommentController extends Controller
                 ]);
             } else {
                 $comment = Comment::create([
-                    'user_id' => $auth_uid,
+                    'user_id' => $authID,
                     'review_id' => $request['review_id'],
-                    'comment_text' => $request['comment_text'],
+                    'comment_detail' => $request['comment_detail'],
                     'comment_date' => Carbon::now()->format('Y-m-d')
                 ]);
 
-                $user = User::select('id', 'first_name', 'profile_picture')->findOrFail($auth_uid);
+                $user = User::select(
+                    'id',
+                    'first_name',
+                    'profile_picture'
+                )->findOrFail($authID);
 
                 $collection = collect([
                     'comment' => $comment,
@@ -63,7 +73,7 @@ class CommentController extends Controller
                 return response()->json([
                     'status' => 202,
                     'message' => 'Request Created',
-                    'result' => $collection,
+                    'result' => $collection
                 ]);
             }
         } else {
@@ -75,16 +85,16 @@ class CommentController extends Controller
     }
 
     public function delete(Request $request, $id) {
-        $auth_uid = Comment::select('user_id')->where('id', $id)->firstOrFail();
-        $auth_token = $request->header('auth_token');
+        $comment = Comment::findOrFail($id);
+        $authToken = $request->header('Auth-Token');
         
-        $auth = User::where([
-            'id' => $auth_uid['user_id'],
-            'token' => $auth_token
+        $isAuth = User::where([
+            'id' => $comment->user_id,
+            'token' => $authToken
         ])->exists();
         
-        if ($auth) {
-            Comment::findOrFail($id)->delete();
+        if ($isAuth) {
+            $comment->delete();
 
             return response()->json([
                 'status' => 404,
