@@ -21,11 +21,19 @@ class Comment extends Model
         'deleted_at'
     ];
 
+    protected $appends = [
+        'timestamp'
+    ];
+
     public function user() {
         return $this->belongsTo(User::class)->select([
             'id',
             'first_name',
             'profile_picture'
         ])->withTrashed();
+    }
+
+    public function getTimestampAttribute() {
+        return $this->created_at->diffForHumans();
     }
 }
