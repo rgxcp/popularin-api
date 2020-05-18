@@ -11,7 +11,9 @@ use Laravel\Lumen\Auth\Authorizable;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
-    use Authenticatable, Authorizable, SoftDeletes;
+    use Authenticatable;
+    use Authorizable;
+    use SoftDeletes;
 
     /**
      * The attributes that aren't mass assignable.
