@@ -82,16 +82,20 @@ class LikeController extends Controller
     }
 
     public function delete(Request $request, $review_id) {
-        $like = Like::where('review_id', $review_id)->firstOrFail();
+        $authID = $request->header('Auth-ID');
         $authToken = $request->header('Auth-Token');
         
         $isAuth = User::where([
-            'id' => $like->user_id,
+            'id' => $authID,
             'token' => $authToken
         ])->exists();
         
         if ($isAuth) {
-            $like->delete();
+            Like::where([
+                'user_id' => $authID,
+                'review_id' => $review_id
+            ])->firstOrFail()
+              ->delete();
             
             return response()->json([
                 'status' => 404,
