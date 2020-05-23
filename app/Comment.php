@@ -28,7 +28,7 @@ class Comment extends Model
     public function user() {
         return $this->belongsTo(User::class)->select([
             'id',
-            'first_name',
+            'username',
             'profile_picture'
         ])->withTrashed();
     }
