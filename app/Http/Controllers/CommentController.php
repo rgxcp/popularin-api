@@ -61,7 +61,7 @@ class CommentController extends Controller
 
                 $user = User::select(
                     'id',
-                    'first_name',
+                    'username',
                     'profile_picture'
                 )->findOrFail($authID);
 
