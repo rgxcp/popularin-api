@@ -32,7 +32,6 @@ class Review extends Model
     public function user() {
         return $this->belongsTo(User::class)->select([
             'id',
-            'first_name',
             'full_name',
             'username',
             'profile_picture'

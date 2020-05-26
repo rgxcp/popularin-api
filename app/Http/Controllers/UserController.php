@@ -21,9 +21,7 @@ class UserController extends Controller
             'full_name',
             'username',
             'profile_picture'
-        )->where('first_name', 'like', $query)
-         ->orWhere('last_name', 'like', $query)
-         ->orWhere('full_name', 'like', $query)
+        )->where('full_name', 'like', $query)
          ->orWhere('username', 'like', $query)
          ->orderBy('created_at', 'desc')
          ->paginate(50);
@@ -67,8 +65,6 @@ class UserController extends Controller
 
         $user = User::select(
             'id',
-            'first_name',
-            'last_name',
             'full_name',
             'username',
             'profile_picture',
@@ -132,14 +128,12 @@ class UserController extends Controller
 
     public function signup(Request $request) {
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required',
-            'last_name' => 'required',
+            'full_name' => 'required',
             'username' => 'required|alpha_dash|min:5|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|different:username'
         ],[
-            'first_name.required' => 'Nama depan harus di isi',
-            'last_name.required' => 'Nama belakang harus di isi',
+            'full_name.required' => 'Nama lengkap harus di isi',
             'username.required' => 'Username harus di isi',
             'email.required' => 'Alamat email harus di isi',
             'password.required' => 'Kata sandi harus di isi',
@@ -159,12 +153,10 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $full_name = $request['first_name'].' '.$request['last_name'];
+            $full_name = $request['full_name'];
             $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
     
             $user = User::create([
-                'first_name' => $request['first_name'],
-                'last_name' => $request['last_name'],
                 'full_name' => $full_name,
                 'username' => $request['username'],
                 'email' => $request['email'],
@@ -264,13 +256,11 @@ class UserController extends Controller
         
         if ($isAuth) {
             $validator = Validator::make($request->all(), [
-                'first_name' => 'required',
-                'last_name' => 'required',
+                'full_name' => 'required',
                 'username' => 'required|alpha_dash|min:5|unique:users,username,'.$id,
                 'email' => 'required|email|unique:users,email,'.$id
             ],[
-                'first_name.required' => 'Nama depan harus di isi',
-                'last_name.required' => 'Nama belakang harus di isi',
+                'full_name.required' => 'Nama lengkap harus di isi',
                 'username.required' => 'Username harus di isi',
                 'email.required' => 'Alamat email harus di isi',
                 'alpha_dash' => 'Username tidak bisa mengandung spasi',
@@ -287,14 +277,12 @@ class UserController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                $full_name = $request['first_name'].' '.$request['last_name'];
+                $full_name = $request['full_name'];
                 $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
                 
                 $user = User::findOrFail($id);
                 
                 $user->update([
-                    'first_name' => $request['first_name'],
-                    'last_name' => $request['last_name'],
                     'full_name' => $full_name,
                     'username' => $request['username'],
                     'email' => $request['email'],
