@@ -56,7 +56,7 @@ class CommentController extends Controller
                     'user_id' => $authID,
                     'review_id' => $request['review_id'],
                     'comment_detail' => $request['comment_detail'],
-                    'comment_date' => Carbon::now()->format('Y-m-d')
+                    'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
                 ]);
 
                 $user = User::select(

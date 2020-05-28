@@ -242,7 +242,7 @@ class ReviewController extends Controller
                     'tmdb_id' => $tmdb_id,
                     'rating' => $request['rating'],
                     'review_detail' => $request['review_detail'],
-                    'review_date' => Carbon::now()->format('Y-m-d'),
+                    'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
                     'watch_date' => $request['watch_date']
                 ]);
                 
