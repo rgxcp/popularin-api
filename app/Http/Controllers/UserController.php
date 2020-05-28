@@ -75,14 +75,14 @@ class UserController extends Controller
             'film'
         ])->where('user_id', $id)
           ->orderBy('created_at', 'desc')
-          ->take(5)
+          ->take(4)
           ->get();
 
         $recent_reviews = Review::with([
             'film'
         ])->where('user_id', $id)
           ->orderBy('created_at', 'desc')
-          ->take(5)
+          ->take(4)
           ->get();
 
         $metadata = collect([
