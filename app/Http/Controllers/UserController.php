@@ -21,8 +21,8 @@ class UserController extends Controller
             'full_name',
             'username',
             'profile_picture'
-        )->where('full_name', 'like', $query)
-         ->orWhere('username', 'like', $query)
+        )->where('full_name', 'like', '%'.$query.'%')
+         ->orWhere('username', 'like', '%'.$query.'%')
          ->orderBy('created_at', 'desc')
          ->paginate(50);
 
