@@ -27,9 +27,9 @@ class UserController extends Controller
          ->paginate(50);
 
         return response()->json([
-            'status' => 101,
-            'message' => 'Request Retrieved',
-            'result' => $users
+            'status' => isset($users[0]) ? 101 : 606,
+            'message' => isset($users[0]) ? 'Request Retrieved' : 'Request Not Found',
+            'result' => isset($users[0]) ? $users : null
         ]);
     }
 
