@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Following;
 use App\Like;
-use App\User;
-use Illuminate\Http\Request;
 
 class LikeController extends Controller
 {
@@ -23,8 +22,8 @@ class LikeController extends Controller
         ]);
     }
 
-    public function showLikesFromFollowing(Request $request, $review_id) {
-        $authID = $request->header('Auth-ID');
+    public function showLikesFromFollowing($review_id) {
+        $authID = Auth::user()->id;
 
         $followings = Following::select('following_id')->where('user_id', $authID);
 
@@ -42,70 +41,44 @@ class LikeController extends Controller
         ]);
     }
 
-    public function create(Request $request, $review_id) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
-        
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
+    public function create($review_id) {
+        $authID = Auth::user()->id;
+
+        $isLiked = Like::where([
+            'user_id' => $authID,
+            'review_id' => $review_id
         ])->exists();
-        
-        if ($isAuth) {
-            $isLiked = Like::where([
+
+        if ($isLiked) {
+            return response()->json([
+                'status' => 666,
+                'message' => 'Already Liked'
+            ]);
+        } else {
+            Like::create([
                 'user_id' => $authID,
                 'review_id' => $review_id
-            ])->exists();
-
-            if ($isLiked) {
-                return response()->json([
-                    'status' => 666,
-                    'message' => 'Already Liked'
-                ]);
-            } else {
-                Like::create([
-                    'user_id' => $authID,
-                    'review_id' => $review_id
-                ]);
-                
-                return response()->json([
-                    'status' => 202,
-                    'message' => 'Request Created'
-                ]);
-            }
-        } else {
+            ]);
+            
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 202,
+                'message' => 'Request Created'
             ]);
         }
     }
 
-    public function delete(Request $request, $review_id) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
+    public function delete($review_id) {
+        $authID = Auth::user()->id;
         
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
+        Like::where([
+            'user_id' => $authID,
+            'review_id' => $review_id
+        ])->firstOrFail()
+          ->delete();
         
-        if ($isAuth) {
-            Like::where([
-                'user_id' => $authID,
-                'review_id' => $review_id
-            ])->firstOrFail()
-              ->delete();
-            
-            return response()->json([
-                'status' => 404,
-                'message' => 'Request Deleted'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        return response()->json([
+            'status' => 404,
+            'message' => 'Request Deleted'
+        ]);
     }
 }

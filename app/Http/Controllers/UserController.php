@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Favorite;
 use App\Following;
 use App\Review;
@@ -15,7 +16,7 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function search(Request $request, $query) {
+    public function search($query) {
         $users = User::select(
             'id',
             'full_name',
@@ -33,35 +34,22 @@ class UserController extends Controller
         ]);
     }
 
-    public function self(Request $request) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
-
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
+    public function self() {
+        $authID = Auth::user()->id;
         
-        if ($isAuth) {
-            $self = User::findOrFail($authID);
+        $self = User::findOrFail($authID);
             
-            return response()->json([
-                'status' => 101,
-                'message' => 'Request Retrieved',
-                'result' => $self
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        return response()->json([
+            'status' => 101,
+            'message' => 'Request Retrieved',
+            'result' => $self
+        ]);
     }
 
-    public function show(Request $request, $id) {
+    public function show($id) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
+        $authID = Auth::user()->id;
 
         $user = User::select(
             'id',
@@ -94,18 +82,6 @@ class UserController extends Controller
             'total_favorite' => Favorite::where('user_id', $id)->count(),
             'total_review' => Review::where('user_id', $id)->count(),
             'total_watchlist' => Watchlist::where('user_id', $id)->count()
-            /*
-            'total_rate_05' => Review::where(['user_id' => $id, 'rating' => 0.5])->count(),
-            'total_rate_10' => Review::where(['user_id' => $id, 'rating' => 1.0])->count(),
-            'total_rate_15' => Review::where(['user_id' => $id, 'rating' => 1.5])->count(),
-            'total_rate_20' => Review::where(['user_id' => $id, 'rating' => 2.0])->count(),
-            'total_rate_25' => Review::where(['user_id' => $id, 'rating' => 2.5])->count(),
-            'total_rate_30' => Review::where(['user_id' => $id, 'rating' => 3.0])->count(),
-            'total_rate_35' => Review::where(['user_id' => $id, 'rating' => 3.5])->count(),
-            'total_rate_40' => Review::where(['user_id' => $id, 'rating' => 4.0])->count(),
-            'total_rate_45' => Review::where(['user_id' => $id, 'rating' => 4.5])->count(),
-            'total_rate_50' => Review::where(['user_id' => $id, 'rating' => 5.0])->count()
-            */
         ]);
 
         $activity = collect([
@@ -196,12 +172,12 @@ class UserController extends Controller
             )->where('username', $request['username'])
              ->firstOrFail();
 
-            $isAuth = Hash::check(
+            $isValid = Hash::check(
                 $request['password'],
                 $user->password
             );
 
-            if ($isAuth) {
+            if ($isValid) {
                 $user->update([
                     'token' => Str::random(100)
                 ]);
@@ -220,41 +196,23 @@ class UserController extends Controller
         }
     }
 
-    public function signout(Request $request) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
+    public function signout() {
+        $authID = Auth::user()->id;
         
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
+        User::findOrFail($authID)->update([
+            'token' => null
+        ]);
         
-        if ($isAuth) {
-            User::findOrFail($authID)->update([
-                'token' => null
-            ]);
-            
-            return response()->json([
-                'status' => 525,
-                'message' => 'User Signed Out'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        return response()->json([
+            'status' => 525,
+            'message' => 'User Signed Out'
+        ]);
     }
 
     public function update(Request $request, $id) {
-        $authToken = $request->header('Auth-Token');
+        $authID = Auth::user()->id;
 
-        $isAuth = User::where([
-            'id' => $id,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
+        if ($id == $authID) {
             $validator = Validator::make($request->all(), [
                 'full_name' => 'required',
                 'username' => 'required|alpha_dash|min:5|unique:users,username,'.$id,
@@ -298,45 +256,42 @@ class UserController extends Controller
             }
         } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 939,
+                'message' => 'Unauthorized'
             ]);
         }
     }
 
     public function updatePassword(Request $request, $id) {
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required',
-            'new_password' => 'required|min:8|different:current_password',
-            'confirm_password' => 'required|same:new_password'
-        ],[
-            'current_password.required' => 'Kata sandi lama harus di isi',
-            'new_password.required' => 'Kata sandi baru harus di isi',
-            'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',
-            'min' => 'Kata sandi baru minimal 8 karakter',
-            'different' => 'Kata sandi baru dan lama harus berbeda',
-            'same' => 'Kata sandi baru dan konfirmasi tidak sama'
-        ]);
+        $authID = Auth::user()->id;
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 626,
-                'message' => 'Validator Fails',
-                'result' => $validator->errors()->all()
+        if ($id == $authID) {
+            $validator = Validator::make($request->all(), [
+                'current_password' => 'required',
+                'new_password' => 'required|min:8|different:current_password',
+                'confirm_password' => 'required|same:new_password'
+            ],[
+                'current_password.required' => 'Kata sandi lama harus di isi',
+                'new_password.required' => 'Kata sandi baru harus di isi',
+                'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',
+                'min' => 'Kata sandi baru minimal 8 karakter',
+                'different' => 'Kata sandi baru dan lama harus berbeda',
+                'same' => 'Kata sandi baru dan konfirmasi tidak sama'
             ]);
-        } else {
-            $user = User::select(
-                'id',
-                'token',
-                'password'
-            )->findOrFail($id);
-
-            $isAuth = Hash::check(
-                $request['current_password'],
-                $user->password
-            );
-
-            if ($isAuth) {
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 626,
+                    'message' => 'Validator Fails',
+                    'result' => $validator->errors()->all()
+                ]);
+            } else {
+                $user = User::select(
+                    'id',
+                    'token',
+                    'password'
+                )->findOrFail($id);
+    
                 $user->update([
                     'password' => Hash::make($request['confirm_password']),
                     'token' => Str::random(100)
@@ -347,41 +302,12 @@ class UserController extends Controller
                     'message' => 'Request Updated',
                     'result' => $user
                 ]);
-            } else {
-                return response()->json([
-                    'status' => 616,
-                    'message' => 'Invalid Credentials'
-                ]);
             }
-        }
-    }
-
-    /*
-    public function delete(Request $request, $id) {
-        $user = User::findOrFail($id);
-
-        $isAuth = Hash::check(
-            $request['password'],
-            $user->password
-        );
-        
-        if ($isAuth) {
-            $user->update([
-                'token' => null
-            ]);
-            
-            $user->delete();
-            
-            return response()->json([
-                'status' => 404,
-                'message' => 'Request Deleted'
-            ]);
         } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 939,
+                'message' => 'Unauthorized'
             ]);
         }
     }
-    */
 }

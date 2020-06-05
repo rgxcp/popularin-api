@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Comment;
 use App\Film;
 use App\Following;
 use App\Like;
 use App\Review;
-use App\User;
 use App\Watchlist;
 use App\Http\Traits\FilmTrait;
 use Illuminate\Http\Request;
@@ -34,10 +34,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showFilmReviewsFromFollowing(Request $request, $tmdb_id) {
+    public function showFilmReviewsFromFollowing($tmdb_id) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
+        $authID = Auth::user()->id;
 
         $followings = Following::select('following_id')->where('user_id', $authID);
         
@@ -55,10 +55,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showLikedReviews(Request $request, $tmdb_id) {
+    public function showLikedReviews($tmdb_id) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
+        $authID = Auth::user()->id;
 
         $likes = Like::select('review_id')->where('user_id', $authID);
 
@@ -76,10 +76,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showSelfReviews(Request $request, $tmdb_id) {
+    public function showSelfReviews($tmdb_id) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
+        $authID = Auth::user()->id;
 
         $reviews = Review::with([
             'user'
@@ -112,43 +112,30 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showTimeline(Request $request) {
+    public function showTimeline() {
         Carbon::setLocale('id');
         
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
+        $authID = Auth::user()->id;
 
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
+        $followings = Following::select('following_id')->where('user_id', $authID);
+
+        $reviews = Review::with([
+            'film', 'user'
+        ])->whereIn('user_id', $followings)
+          ->orderBy('created_at', 'desc')
+          ->paginate(50);
         
-        if ($isAuth) {
-            $followings = Following::select('following_id')->where('user_id', $authID);
-
-            $reviews = Review::with([
-                'film', 'user'
-            ])->whereIn('user_id', $followings)
-              ->orderBy('created_at', 'desc')
-              ->paginate(50);
-            
-            return response()->json([
-                'status' => isset($reviews[0]) ? 101 : 606,
-                'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
-                'result' => isset($reviews[0]) ? $reviews : null
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        return response()->json([
+            'status' => isset($reviews[0]) ? 101 : 606,
+            'message' => isset($reviews[0]) ? 'Request Retrieved' : 'Request Not Found',
+            'result' => isset($reviews[0]) ? $reviews : null
+        ]);
     }
 
-    public function show(Request $request, $id) {
+    public function show($id) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
+        $authID = Auth::user()->id;
 
         $review = Review::with([
             'film', 'user'
@@ -188,87 +175,70 @@ class ReviewController extends Controller
     }
 
     public function create(Request $request) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
+        $authID = Auth::user()->id;
         
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
-            $validator = Validator::make($request->all(), [
-                'rating' => 'required|numeric|min:0.5|max:5.0',
-                'review_detail' => 'required',
-                'watch_date' => 'required|date'
-            ],[
-                'rating.required' => 'Rating harus di isi',
-                'review_detail.required' => 'Ulasan harus di isi',
-                'watch_date.required' => 'Tanggal tonton harus di isi',
-                'numeric' => 'Format rating tidak sesuai',
-                'date' => 'Format tanggal tonton tidak sesuai',
-                'min' => 'Rating minimal 0.5',
-                'max' => 'Rating maksimal 5.0'
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
-                ]);
-            } else {
-                $tmdb_id = $request['tmdb_id'];
+        $validator = Validator::make($request->all(), [
+            'rating' => 'required|numeric|min:0.5|max:5.0',
+            'review_detail' => 'required',
+            'watch_date' => 'required|date'
+        ],[
+            'rating.required' => 'Rating harus di isi',
+            'review_detail.required' => 'Ulasan harus di isi',
+            'watch_date.required' => 'Tanggal tonton harus di isi',
+            'numeric' => 'Format rating tidak sesuai',
+            'date' => 'Format tanggal tonton tidak sesuai',
+            'min' => 'Rating minimal 0.5',
+            'max' => 'Rating maksimal 5.0'
+        ]);
 
-                $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
-
-                if (!$filmExist) {
-                    $this->addFilm($tmdb_id);
-                }
-
-                $watchlist = Watchlist::where([
-                    'user_id' => $authID,
-                    'tmdb_id' => $tmdb_id
-                ]);
-                
-                $inWatchlist = $watchlist->exists();
-                
-                if ($inWatchlist) {
-                    $watchlist->delete();
-                }
-                
-                Review::create([
-                    'user_id' => $authID,
-                    'tmdb_id' => $tmdb_id,
-                    'rating' => $request['rating'],
-                    'review_detail' => $request['review_detail'],
-                    'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
-                    'watch_date' => $request['watch_date']
-                ]);
-                
-                return response()->json([
-                    'status' => 202,
-                    'message' => 'Request Created'
-                ]);
-            }
-        } else {
+        if ($validator->fails()) {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
+            ]);
+        } else {
+            $tmdb_id = $request['tmdb_id'];
+
+            $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
+
+            if (!$filmExist) {
+                $this->addFilm($tmdb_id);
+            }
+
+            $watchlist = Watchlist::where([
+                'user_id' => $authID,
+                'tmdb_id' => $tmdb_id
+            ]);
+            
+            $inWatchlist = $watchlist->exists();
+            
+            if ($inWatchlist) {
+                $watchlist->delete();
+            }
+            
+            Review::create([
+                'user_id' => $authID,
+                'tmdb_id' => $tmdb_id,
+                'rating' => $request['rating'],
+                'review_detail' => $request['review_detail'],
+                'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
+                'watch_date' => $request['watch_date']
+            ]);
+            
+            return response()->json([
+                'status' => 202,
+                'message' => 'Request Created'
             ]);
         }
     }
 
     public function update(Request $request, $id) {
         $review = Review::findOrFail($id);
-        $authToken = $request->header('Auth-Token');
         
-        $isAuth = User::where([
-            'id' => $review->user_id,
-            'token' => $authToken
-        ])->exists();
+        $authID = Auth::user()->id;
         
-        if ($isAuth) {
+        if ($review->user_id == $authID) {
             $validator = Validator::make($request->all(), [
                 'rating' => 'required|numeric|min:0.5|max:5.0',
                 'review_detail' => 'required',
@@ -303,22 +273,18 @@ class ReviewController extends Controller
             }
         } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 939,
+                'message' => 'Unauthorized'
             ]);
         }
     }
 
-    public function delete(Request $request, $id) {
+    public function delete($id) {
         $review = Review::findOrFail($id);
-        $authToken = $request->header('Auth-Token');
         
-        $isAuth = User::where([
-            'id' => $review->user_id,
-            'token' => $authToken
-        ])->exists();
+        $authID = Auth::user()->id;
         
-        if ($isAuth) {
+        if ($review->user_id == $authID) {
             $review->delete();
 
             return response()->json([
@@ -327,8 +293,8 @@ class ReviewController extends Controller
             ]);
         } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 939,
+                'message' => 'Unauthorized'
             ]);
         }
     }

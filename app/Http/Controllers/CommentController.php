@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Comment;
-use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
@@ -29,71 +29,48 @@ class CommentController extends Controller
     public function create(Request $request) {
         Carbon::setLocale('id');
 
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
-        
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
-            $validator = Validator::make($request->all(), [
-                'comment_detail' => 'required|max:300'
-            ],[
-                'required' => 'Komen harus di isi',
-                'max' => 'Komen maksimal 300 karakter'
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
-                ]);
-            } else {
-                $comment = Comment::create([
-                    'user_id' => $authID,
-                    'review_id' => $request['review_id'],
-                    'comment_detail' => $request['comment_detail'],
-                    'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
-                ]);
+        $auth = Auth::user();
 
-                $user = User::select(
-                    'id',
-                    'username',
-                    'profile_picture'
-                )->findOrFail($authID);
+        $validator = Validator::make($request->all(), [
+            'comment_detail' => 'required|max:300'
+        ],[
+            'required' => 'Komen harus di isi',
+            'max' => 'Komen maksimal 300 karakter'
+        ]);
 
-                $collection = collect([
-                    'comment' => $comment,
-                    'user' => $user
-                ]);
-    
-                return response()->json([
-                    'status' => 202,
-                    'message' => 'Request Created',
-                    'result' => $collection
-                ]);
-            }
-        } else {
+        if ($validator->fails()) {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
+            ]);
+        } else {
+            $comment = Comment::create([
+                'user_id' => $auth->id,
+                'review_id' => $request['review_id'],
+                'comment_detail' => $request['comment_detail'],
+                'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
+            ]);
+
+            $collection = collect([
+                'comment' => $comment,
+                'user' => $auth
+            ]);
+
+            return response()->json([
+                'status' => 202,
+                'message' => 'Request Created',
+                'result' => $collection
             ]);
         }
     }
 
-    public function delete(Request $request, $id) {
+    public function delete($id) {
         $comment = Comment::findOrFail($id);
-        $authToken = $request->header('Auth-Token');
+
+        $authID = Auth::user()->id;
         
-        $isAuth = User::where([
-            'id' => $comment->user_id,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
+        if ($comment->user_id == $authID) {
             $comment->delete();
 
             return response()->json([
@@ -102,8 +79,8 @@ class CommentController extends Controller
             ]);
         } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 939,
+                'message' => 'Unauthorized'
             ]);
         }
     }

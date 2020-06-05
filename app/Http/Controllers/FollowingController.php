@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Following;
 use App\User;
-use Illuminate\Http\Request;
 
 class FollowingController extends Controller
 {
@@ -36,8 +36,8 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showMutuals(Request $request, $user_id) {
-        $authID = $request->header('Auth-ID');
+    public function showMutuals($user_id) {
+        $authID = Auth::user()->id;
 
         $authFollowings = Following::select('following_id')->where('user_id', $authID)->pluck('following_id')->toArray();
         $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
@@ -60,77 +60,51 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function create(Request $request, $user_id) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
-        
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
-            User::findOrFail($user_id);
+    public function create($user_id) {
+        User::findOrFail($user_id);
 
-            $isFollowed = Following::where([
+        $authID = Auth::user()->id;
+
+        $isFollowed = Following::where([
+            'user_id' => $authID,
+            'following_id' => $user_id
+        ])->exists();
+
+        if ($user_id == $authID) {
+            return response()->json([
+                'status' => 636,
+                'message' => 'Can\'t Follow Self'
+            ]);
+        } else if ($isFollowed) {
+            return response()->json([
+                'status' => 656,
+                'message' => 'Already Followed'
+            ]);
+        } else {
+            Following::create([
                 'user_id' => $authID,
                 'following_id' => $user_id
-            ])->exists();
+            ]);
 
-            if ($authID == $user_id) {
-                return response()->json([
-                    'status' => 636,
-                    'message' => 'Can\'t Follow Self'
-                ]);
-            } else if ($isFollowed) {
-                return response()->json([
-                    'status' => 656,
-                    'message' => 'Already Followed'
-                ]);
-            } else {
-                Following::create([
-                    'user_id' => $authID,
-                    'following_id' => $user_id
-                ]);
-    
-                return response()->json([
-                    'status' => 202,
-                    'message' => 'Request Created'
-                ]);
-            }
-        } else {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
+                'status' => 202,
+                'message' => 'Request Created'
             ]);
         }
     }
 
-    public function delete(Request $request, $user_id) {
-        $authID = $request->header('Auth-ID');
-        $authToken = $request->header('Auth-Token');
-        
-        $isAuth = User::where([
-            'id' => $authID,
-            'token' => $authToken
-        ])->exists();
-        
-        if ($isAuth) {
-            Following::where([
-                'user_id' => $authID,
-                'following_id' => $user_id
-            ])->firstOrFail()
-              ->delete();
+    public function delete($user_id) {
+        $authID = Auth::user()->id;
 
-            return response()->json([
-                'status' => 404,
-                'message' => 'Request Deleted'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials'
-            ]);
-        }
+        Following::where([
+            'user_id' => $authID,
+            'following_id' => $user_id
+        ])->firstOrFail()
+          ->delete();
+
+        return response()->json([
+            'status' => 404,
+            'message' => 'Request Deleted'
+        ]);
     }
 }
