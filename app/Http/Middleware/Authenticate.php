@@ -36,7 +36,11 @@ class Authenticate
     public function handle($request, Closure $next, $guard = null)
     {
         if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+            return response()->json([
+                'status' => 929,
+                'message' => 'Unauthenticated User',
+                'problem' => 'You must sign up or sign in as user to use all the feature of this API'
+            ]);
         }
 
         return $next($request);
