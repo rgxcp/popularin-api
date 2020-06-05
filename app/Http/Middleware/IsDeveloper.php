@@ -20,8 +20,8 @@ class IsDeveloper
 
         if (!$isDeveloper) {
             return response()->json([
-                'status' => 616,
-                'message' => 'Invalid Credentials',
+                'status' => 919,
+                'message' => 'Unauthenticated Developer',
                 'problem' => 'You must sign up or sign in as developer to use all the feature of this API'
             ]);
         }
