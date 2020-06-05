@@ -11,7 +11,7 @@
 |
 */
 
-$router->group(['prefix' => 'api'], function () use ($router) {
+$router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () use ($router) {
     // Version
     $router->get('/', function () use ($router) {
         return $router->app->version();
@@ -75,13 +75,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('user/{user_id}/watchlists', 'WatchlistController@showUserWatchlists');
     $router->post('film/{tmdb_id}/watchlist', 'WatchlistController@create');
     $router->delete('film/{tmdb_id}/unwatchlist', 'WatchlistController@delete');
+});
 
+$router->group(['prefix' => 'api/developer'], function () use ($router) {
     // Developer
-    $router->get('developer/status', 'DeveloperController@showStatus');
-    $router->get('developer/self', 'DeveloperController@self');
-    $router->post('developer/signup', 'DeveloperController@signup');
-    $router->post('developer/signin', 'DeveloperController@signin');
-    $router->post('developer/signout', 'DeveloperController@signout');
-    $router->put('developer/{id}', 'DeveloperController@update');
-    $router->put('developer/{id}/password', 'DeveloperController@updatePassword');
+    $router->get('status', 'DeveloperController@showstatus');
+    $router->get('self', 'DeveloperController@self');
+    $router->post('signup', 'DeveloperController@signup');
+    $router->post('signin', 'DeveloperController@signin');
+    $router->post('signout', 'DeveloperController@signout');
+    $router->put('{id}', 'DeveloperController@update');
+    $router->put('{id}/password', 'DeveloperController@updatePassword');
 });
