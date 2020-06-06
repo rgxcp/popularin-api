@@ -10,8 +10,8 @@ use App\Watchlist;
 
 class FilmController extends Controller
 {
-    public function self($tmdb_id) {
-        $authID = Auth::user()->id;
+    public function showSelf($tmdb_id) {
+        $authID = Auth::id();
 
         $last_rate = Review::select('rating')->where([
             'user_id' => $authID,
