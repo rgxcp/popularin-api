@@ -8,7 +8,7 @@ use App\Like;
 
 class LikeController extends Controller
 {
-    public function showLikesFromAll($review_id) {
+    public function showsLikeFromAll($review_id) {
         $likes = Like::with([
             'user'
         ])->where('review_id', $review_id)
@@ -22,10 +22,8 @@ class LikeController extends Controller
         ]);
     }
 
-    public function showLikesFromFollowing($review_id) {
-        $authID = Auth::user()->id;
-
-        $followings = Following::select('following_id')->where('user_id', $authID);
+    public function showsLikeFromFollowing($review_id) {
+        $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $likes = Like::with([
             'user'
@@ -42,7 +40,7 @@ class LikeController extends Controller
     }
 
     public function create($review_id) {
-        $authID = Auth::user()->id;
+        $authID = Auth::id();
 
         $isLiked = Like::where([
             'user_id' => $authID,
@@ -68,10 +66,8 @@ class LikeController extends Controller
     }
 
     public function delete($review_id) {
-        $authID = Auth::user()->id;
-        
         Like::where([
-            'user_id' => $authID,
+            'user_id' => Auth::id(),
             'review_id' => $review_id
         ])->firstOrFail()
           ->delete();
