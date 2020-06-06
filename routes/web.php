@@ -12,42 +12,6 @@
 */
 
 $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () use ($router) {
-    // Version
-    $router->get('/', function () use ($router) {
-        return $router->app->version();
-    });
-
-    // Comment
-    $router->get('review/{review_id}/comments', 'CommentController@shows');
-
-    // Favorite
-    $router->get('film/{tmdb_id}/favorites/from/all', 'FavoriteController@showFilmFavoritesFromAll');
-    $router->get('user/{user_id}/favorites', 'FavoriteController@showUserFavorites');
-
-    // Film
-    $router->get('film/{tmdb_id}', 'FilmController@show');
-
-    // Following
-    $router->get('user/{user_id}/followings', 'FollowingController@showFollowings');
-    $router->get('user/{user_id}/followers', 'FollowingController@showFollowers');
-
-    // Like
-    $router->get('review/{review_id}/likes/from/all', 'LikeController@showLikesFromAll');
-
-    // Review
-    $router->get('film/{tmdb_id}/reviews/from/all', 'ReviewController@showFilmReviewsFromAll');
-    $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
-    $router->get('reviews', 'ReviewController@shows');
-
-    // User
-    $router->get('user/search/{query}', 'UserController@search');
-    $router->post('user/signup', 'UserController@signup');
-    $router->post('user/signin', 'UserController@signin');
-
-    // Watchlist
-    $router->get('film/{tmdb_id}/watchlists/from/all', 'WatchlistController@showFilmWatchlistsFromAll');
-    $router->get('user/{user_id}/watchlists', 'WatchlistController@showUserWatchlists');
-
     $router->group(['middleware' => 'auth'], function () use ($router) {
         // Comment
         $router->post('comment', 'CommentController@create');
@@ -76,14 +40,12 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->get('film/{tmdb_id}/reviews/liked', 'ReviewController@showLikedReviews');
         $router->get('film/{tmdb_id}/reviews/self', 'ReviewController@showSelfReviews');
         $router->get('review/timeline', 'ReviewController@showTimeline');
-        $router->get('review/{id}', 'ReviewController@show');
         $router->post('review', 'ReviewController@create');
         $router->put('review/{id}', 'ReviewController@update');
         $router->delete('review/{id}', 'ReviewController@delete');
 
         // User
         $router->get('user/self', 'UserController@self');
-        $router->get('user/{id}', 'UserController@show');
         $router->post('user/signout', 'UserController@signout');
         $router->put('user/{id}', 'UserController@update');
         $router->put('user/{id}/password', 'UserController@updatePassword');
@@ -93,6 +55,44 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('film/{tmdb_id}/watchlist', 'WatchlistController@create');
         $router->delete('film/{tmdb_id}/unwatchlist', 'WatchlistController@delete');
     });
+    
+    // Version
+    $router->get('/', function () use ($router) {
+        return $router->app->version();
+    });
+
+    // Comment
+    $router->get('review/{review_id}/comments', 'CommentController@shows');
+
+    // Favorite
+    $router->get('film/{tmdb_id}/favorites/from/all', 'FavoriteController@showFilmFavoritesFromAll');
+    $router->get('user/{user_id}/favorites', 'FavoriteController@showUserFavorites');
+
+    // Film
+    $router->get('film/{tmdb_id}', 'FilmController@show');
+
+    // Following
+    $router->get('user/{user_id}/followings', 'FollowingController@showFollowings');
+    $router->get('user/{user_id}/followers', 'FollowingController@showFollowers');
+
+    // Like
+    $router->get('review/{review_id}/likes/from/all', 'LikeController@showLikesFromAll');
+
+    // Review
+    $router->get('film/{tmdb_id}/reviews/from/all', 'ReviewController@showFilmReviewsFromAll');
+    $router->get('user/{user_id}/reviews', 'ReviewController@showUserReviews');
+    $router->get('review/{id}', 'ReviewController@show');
+    $router->get('reviews', 'ReviewController@shows');
+
+    // User
+    $router->get('user/search/{query}', 'UserController@search');
+    $router->get('user/{id}', 'UserController@show');
+    $router->post('user/signup', 'UserController@signup');
+    $router->post('user/signin', 'UserController@signin');
+
+    // Watchlist
+    $router->get('film/{tmdb_id}/watchlists/from/all', 'WatchlistController@showFilmWatchlistsFromAll');
+    $router->get('user/{user_id}/watchlists', 'WatchlistController@showUserWatchlists');
 });
 
 $router->group(['prefix' => 'developer'], function () use ($router) {
