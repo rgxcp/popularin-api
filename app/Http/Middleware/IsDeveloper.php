@@ -16,7 +16,7 @@ class IsDeveloper
      */
     public function handle($request, Closure $next)
     {
-        $isDeveloper = Developer::where('api_token', $request->header('api_token'))->exists();
+        $isDeveloper = Developer::where('api_key', $request->header('API-Key'))->exists();
 
         if (!$isDeveloper) {
             return response()->json([
