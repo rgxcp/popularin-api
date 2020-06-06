@@ -8,7 +8,7 @@ use App\User;
 
 class FollowingController extends Controller
 {
-    public function showFollowings($user_id) {
+    public function showsFollowing($user_id) {
         $followings = Following::with([
             'following'
         ])->where('user_id', $user_id)
@@ -22,7 +22,7 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showFollowers($user_id) {
+    public function showsFollower($user_id) {
         $followers = Following::with([
             'follower'
         ])->where('following_id', $user_id)
@@ -36,10 +36,8 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showMutuals($user_id) {
-        $authID = Auth::user()->id;
-
-        $authFollowings = Following::select('following_id')->where('user_id', $authID)->pluck('following_id')->toArray();
+    public function showsMutual($user_id) {
+        $authFollowings = Following::select('following_id')->where('user_id', Auth::id())->pluck('following_id')->toArray();
         $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
         $intersectFollowings = array_values(array_intersect($authFollowings, $userFollowings));
 
@@ -63,7 +61,7 @@ class FollowingController extends Controller
     public function create($user_id) {
         User::findOrFail($user_id);
 
-        $authID = Auth::user()->id;
+        $authID = Auth::id();
 
         $isFollowed = Following::where([
             'user_id' => $authID,
@@ -94,10 +92,8 @@ class FollowingController extends Controller
     }
 
     public function delete($user_id) {
-        $authID = Auth::user()->id;
-
         Following::where([
-            'user_id' => $authID,
+            'user_id' => Auth::id(),
             'following_id' => $user_id
         ])->firstOrFail()
           ->delete();
