@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -21,6 +22,10 @@ class Comment extends Model
         'deleted_at'
     ];
 
+    protected $append = [
+        'user'
+    ];
+
     protected $appends = [
         'timestamp'
     ];
@@ -31,6 +36,14 @@ class Comment extends Model
             'username',
             'profile_picture'
         ])->withTrashed();
+    }
+
+    public function getUserAttribute() {
+        return Auth::user()->only([
+            'id',
+            'username',
+            'profile_picture'
+        ]);
     }
 
     public function getTimestampAttribute() {

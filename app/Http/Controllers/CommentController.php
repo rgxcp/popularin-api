@@ -6,6 +6,7 @@ use Auth;
 use App\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
@@ -29,8 +30,6 @@ class CommentController extends Controller
     public function create(Request $request) {
         Carbon::setLocale('id');
 
-        $auth = Auth::user();
-
         $validator = Validator::make($request->all(), [
             'comment_detail' => 'required|max:300'
         ],[
@@ -46,21 +45,16 @@ class CommentController extends Controller
             ]);
         } else {
             $comment = Comment::create([
-                'user_id' => $auth->id,
+                'user_id' => Auth::id(),
                 'review_id' => $request['review_id'],
                 'comment_detail' => $request['comment_detail'],
                 'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
             ]);
 
-            $collection = collect([
-                'comment' => $comment,
-                'user' => $auth
-            ]);
-
             return response()->json([
                 'status' => 202,
                 'message' => 'Request Created',
-                'result' => $collection
+                'result' => $comment->append('user')
             ]);
         }
     }
@@ -68,9 +62,7 @@ class CommentController extends Controller
     public function delete($id) {
         $comment = Comment::findOrFail($id);
 
-        $authID = Auth::user()->id;
-        
-        if ($comment->user_id == $authID) {
+        if (Gate::allows('delete-comment', $comment)) {
             $comment->delete();
 
             return response()->json([
