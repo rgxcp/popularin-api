@@ -12,7 +12,7 @@ class WatchlistController extends Controller
 {
     use FilmTrait;
 
-    public function showFilmWatchlistsFromAll($tmdb_id) {
+    public function showsFilmWatchlistFromAll($tmdb_id) {
         $watchlists = Watchlist::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
@@ -26,10 +26,8 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showFilmWatchlistsFromFollowing($tmdb_id) {
-        $authID = Auth::user()->id;
-
-        $followings = Following::select('following_id')->where('user_id', $authID);
+    public function showsFilmWatchlistFromFollowing($tmdb_id) {
+        $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $watchlists = Watchlist::with([
             'user'
@@ -45,7 +43,7 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showUserWatchlists($user_id) {
+    public function showsUserWatchlist($user_id) {
         $watchlists = Watchlist::with([
             'film'
         ])->where('user_id', $user_id)
@@ -60,7 +58,7 @@ class WatchlistController extends Controller
     }
 
     public function create($tmdb_id) {
-        $authID = Auth::user()->id;
+        $authID = Auth::id();
         
         $inWatchlist = Watchlist::where([
             'user_id' => $authID,
@@ -92,10 +90,8 @@ class WatchlistController extends Controller
     }
 
     public function delete($tmdb_id) {
-        $authID = Auth::user()->id;
-        
         Watchlist::where([
-            'user_id' => $authID,
+            'user_id' => Auth::id(),
             'tmdb_id' => $tmdb_id
         ])->firstOrFail()
           ->delete();
