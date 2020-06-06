@@ -135,7 +135,11 @@ class ReviewController extends Controller
     public function show($id) {
         Carbon::setLocale('id');
 
-        $authID = Auth::user()->id;
+        if (Auth::check()) {
+            $authID = Auth::user()->id;
+        } else {
+            $authID = 0;
+        }
 
         $review = Review::with([
             'film', 'user'
