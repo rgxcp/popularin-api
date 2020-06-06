@@ -14,14 +14,14 @@ class CreateDevelopersTable extends Migration
     public function up()
     {
         Schema::create('developers', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->string('full_name');
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('profile_picture');
             $table->string('password');
-            $table->string('api_token', 100);
-            $table->string('token', 100)->nullable();
+            $table->string('api_key', 64)->unique()->nullable();
+            $table->string('api_token', 64)->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
