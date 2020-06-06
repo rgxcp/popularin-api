@@ -12,7 +12,7 @@ class FavoriteController extends Controller
 {
     use FilmTrait;
 
-    public function showFilmFavoritesFromAll($tmdb_id) {
+    public function showsFilmFavoriteFromAll($tmdb_id) {
         $favorites = Favorite::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
@@ -26,10 +26,8 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function showFilmFavoritesFromFollowing($tmdb_id) {
-        $authID = Auth::user()->id;
-
-        $followings = Following::select('following_id')->where('user_id', $authID);
+    public function showsFilmFavoriteFromFollowing($tmdb_id) {
+        $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $favorites = Favorite::with([
             'user'
@@ -45,7 +43,7 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function showUserFavorites($user_id) {
+    public function showsUserFavorite($user_id) {
         $favorites = Favorite::with([
             'film'
         ])->where('user_id', $user_id)
@@ -60,7 +58,7 @@ class FavoriteController extends Controller
     }
 
     public function create($tmdb_id) {
-        $authID = Auth::user()->id;
+        $authID = Auth::id();
 
         $inFavorite = Favorite::where([
             'user_id' => $authID,
@@ -92,10 +90,8 @@ class FavoriteController extends Controller
     }
 
     public function delete($tmdb_id) {
-        $authID = Auth::user()->id;
-        
         Favorite::where([
-            'user_id' => $authID,
+            'user_id' => Auth::id(),
             'tmdb_id' => $tmdb_id
         ])->firstOrFail()
           ->delete();
