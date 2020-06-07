@@ -17,15 +17,10 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
     public function search($query) {
-        $users = User::select(
-            'id',
-            'full_name',
-            'username',
-            'profile_picture'
-        )->where('full_name', 'like', '%'.$query.'%')
-         ->orWhere('username', 'like', '%'.$query.'%')
-         ->orderBy('created_at', 'desc')
-         ->paginate(50);
+        $users = User::where('full_name', 'like', '%'.$query.'%')
+            ->orWhere('username', 'like', '%'.$query.'%')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
 
         return response()->json([
             'status' => isset($users[0]) ? 101 : 606,
@@ -34,15 +29,13 @@ class UserController extends Controller
         ]);
     }
 
-    public function self() {
-        $authID = Auth::user()->id;
-        
-        $self = User::findOrFail($authID);
+    public function showSelf() {
+        $self = User::findOrFail(Auth::id());
             
         return response()->json([
             'status' => 101,
             'message' => 'Request Retrieved',
-            'result' => $self
+            'result' => $self->makeVisible('email')
         ]);
     }
 
@@ -50,18 +43,12 @@ class UserController extends Controller
         Carbon::setLocale('id');
 
         if (Auth::check()) {
-            $authID = Auth::user()->id;
+            $authID = Auth::id();
         } else {
             $authID = 0;
         }
 
-        $user = User::select(
-            'id',
-            'full_name',
-            'username',
-            'profile_picture',
-            'created_at'
-        )->findOrFail($id);
+        $user = User::findOrFail($id);
 
         $recent_favorites = Favorite::with([
             'film'
@@ -79,8 +66,8 @@ class UserController extends Controller
 
         $metadata = collect([
             'joined_since' => $user->created_at->diffForHumans(),
-            'is_following' => Following::where('user_id', $authID)->where('following_id', $id)->exists(),
-            'is_follower' => Following::where('user_id', $id)->where('following_id', $authID)->exists(),
+            'is_following' => Following::where(['user_id' => $authID, 'following_id' => $id])->exists(),
+            'is_follower' => Following::where(['user_id' => $id, 'following_id' => $authID])->exists(),
             'total_following' => Following::where('user_id', $id)->count(),
             'total_follower' => Following::where('following_id', $id)->count(),
             'total_favorite' => Favorite::where('user_id', $id)->count(),
@@ -106,7 +93,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function signup(Request $request) {
+    public function signUp(Request $request) {
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
             'username' => 'required|alpha_dash|min:5|unique:users,username',
@@ -138,22 +125,22 @@ class UserController extends Controller
     
             $user = User::create([
                 'full_name' => $full_name,
-                'username' => $request['username'],
+                'username' => strtolower($request['username']),
                 'email' => $request['email'],
                 'profile_picture' => $profile_picture,
                 'password' => Hash::make($request['password']),
-                'token' => Str::random(100)
+                'api_token' => Hash('SHA256', Str::random(100))
             ]);
     
             return response()->json([
                 'status' => 505,
-                'message' => 'User Signed Up',
-                'result' => $user
+                'message' => 'Signed Up',
+                'result' => $user->makeVisible('email', 'api_token')
             ]);
         }
     }
 
-    public function signin(Request $request) {
+    public function signIn(Request $request) {
         $validator = Validator::make($request->all(), [
             'username' => 'required',
             'password' => 'required'
@@ -169,12 +156,7 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $user = User::select(
-                'id',
-                'token',
-                'password'
-            )->where('username', $request['username'])
-             ->firstOrFail();
+            $user = User::where('username', $request['username'])->firstOrFail();
 
             $isValid = Hash::check(
                 $request['password'],
@@ -183,13 +165,13 @@ class UserController extends Controller
 
             if ($isValid) {
                 $user->update([
-                    'token' => Str::random(100)
+                    'api_token' => Hash('SHA256', Str::random(100))
                 ]);
 
                 return response()->json([
                     'status' => 515,
-                    'message' => 'User Signed In',
-                    'result' => $user
+                    'message' => 'Signed In',
+                    'result' => $user->makeVisible('api_token')->makeHidden('full_name', 'username', 'profile_picture')
                 ]);
             } else {
                 return response()->json([
@@ -200,23 +182,19 @@ class UserController extends Controller
         }
     }
 
-    public function signout() {
-        $authID = Auth::user()->id;
-        
-        User::findOrFail($authID)->update([
-            'token' => null
+    public function signOut() {
+        User::findOrFail(Auth::id())->update([
+            'api_token' => null
         ]);
         
         return response()->json([
             'status' => 525,
-            'message' => 'User Signed Out'
+            'message' => 'Signed Out'
         ]);
     }
 
-    public function update(Request $request, $id) {
-        $authID = Auth::user()->id;
-
-        if ($id == $authID) {
+    public function updateProfile(Request $request, $id) {
+        if ($id == Auth::id()) {
             $validator = Validator::make($request->all(), [
                 'full_name' => 'required',
                 'username' => 'required|alpha_dash|min:5|unique:users,username,'.$id,
@@ -239,23 +217,23 @@ class UserController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
+                $user = User::findOrFail($id);
+
                 $full_name = $request['full_name'];
                 $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
-                
-                $user = User::findOrFail($id);
                 
                 $user->update([
                     'full_name' => $full_name,
                     'username' => $request['username'],
                     'email' => $request['email'],
                     'profile_picture' => $profile_picture,
-                    'token' => Str::random(100)
+                    'api_token' => Hash('SHA256', Str::random(100))
                 ]);
                     
                 return response()->json([
                     'status' => 303,
                     'message' => 'Request Updated',
-                    'result' => $user
+                    'result' => $user->makeVisible('email', 'api_token')
                 ]);
             }
         } else {
@@ -267,9 +245,7 @@ class UserController extends Controller
     }
 
     public function updatePassword(Request $request, $id) {
-        $authID = Auth::user()->id;
-
-        if ($id == $authID) {
+        if ($id == Auth::id()) {
             $validator = Validator::make($request->all(), [
                 'current_password' => 'required',
                 'new_password' => 'required|min:8|different:current_password',
@@ -290,22 +266,30 @@ class UserController extends Controller
                     'result' => $validator->errors()->all()
                 ]);
             } else {
-                $user = User::select(
-                    'id',
-                    'token',
-                    'password'
-                )->findOrFail($id);
+                $user = User::findOrFail($id);
+
+                $isValid = Hash::check(
+                    $request['current_password'],
+                    $user->password
+                );
     
-                $user->update([
-                    'password' => Hash::make($request['confirm_password']),
-                    'token' => Str::random(100)
-                ]);
-                    
-                return response()->json([
-                    'status' => 303,
-                    'message' => 'Request Updated',
-                    'result' => $user
-                ]);
+                if ($isValid) {
+                    $user->update([
+                        'password' => Hash::make($request['confirm_password']),
+                        'api_token' => Hash('SHA256', Str::random(100))
+                    ]);
+                        
+                    return response()->json([
+                        'status' => 303,
+                        'message' => 'Request Updated',
+                        'result' => $user->makeVisible('api_token')->makeHidden('full_name', 'username', 'profile_picture')
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 616,
+                        'message' => 'Invalid Credentials'
+                    ]);
+                }
             }
         } else {
             return response()->json([
