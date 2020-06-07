@@ -18,10 +18,10 @@ class Following extends Model
     ];
 
     public function following() {
-        return $this->belongsTo(User::class, 'following_id', 'id')->withTrashed();
+        return $this->belongsTo(User::class, 'following_id', 'id');
     }
 
     public function follower() {
-        return $this->belongsTo(User::class, 'user_id', 'id')->withTrashed();
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

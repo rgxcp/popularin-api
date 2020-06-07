@@ -43,7 +43,6 @@ class FollowingController extends Controller
 
         $mutuals = User::whereIn('id', $intersectFollowings)
             ->orderBy('created_at', 'desc')
-            ->withTrashed()
             ->paginate(50);
 
         return response()->json([
