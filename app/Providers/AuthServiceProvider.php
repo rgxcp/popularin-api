@@ -32,8 +32,20 @@ class AuthServiceProvider extends ServiceProvider
 
         $this->app['auth']->viaRequest('api', function ($request) {
             if ($request->header('Auth-Token')) {
-                return User::where('token', $request->header('Auth-Token'))->first();
+                return User::where('api_token', $request->header('Auth-Token'))->first();
             }
+        });
+
+        Gate::define('update-review', function ($user, $review) {
+            return $user->id === $review->user_id;
+        });
+
+        Gate::define('delete-comment', function ($user, $comment) {
+            return $user->id === $comment->user_id;
+        });
+
+        Gate::define('delete-review', function ($user, $review) {
+            return $user->id === $review->user_id;
         });
     }
 }
