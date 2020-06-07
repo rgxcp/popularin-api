@@ -31,19 +31,11 @@ class Comment extends Model
     ];
 
     public function user() {
-        return $this->belongsTo(User::class)->select([
-            'id',
-            'username',
-            'profile_picture'
-        ])->withTrashed();
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function getUserAttribute() {
-        return Auth::user()->only([
-            'id',
-            'username',
-            'profile_picture'
-        ]);
+        return Auth::user();
     }
 
     public function getTimestampAttribute() {

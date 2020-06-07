@@ -22,11 +22,6 @@ class Favorite extends Model
     }
 
     public function user() {
-        return $this->belongsTo(User::class)->select([
-            'id',
-            'full_name',
-            'username',
-            'profile_picture'
-        ])->withTrashed();
+        return $this->belongsTo(User::class)->withTrashed();
     }
 }

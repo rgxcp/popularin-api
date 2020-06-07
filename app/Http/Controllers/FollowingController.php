@@ -41,15 +41,10 @@ class FollowingController extends Controller
         $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
         $intersectFollowings = array_values(array_intersect($authFollowings, $userFollowings));
 
-        $mutuals = User::select(
-            'id',
-            'full_name',
-            'username',
-            'profile_picture'
-        )->whereIn('id', $intersectFollowings)
-         ->orderBy('created_at', 'desc')
-         ->withTrashed()
-         ->paginate(50);
+        $mutuals = User::whereIn('id', $intersectFollowings)
+            ->orderBy('created_at', 'desc')
+            ->withTrashed()
+            ->paginate(50);
 
         return response()->json([
             'status' => isset($mutuals[0]) ? 101 : 606,
