@@ -30,7 +30,10 @@ class Developer extends Model implements AuthenticatableContract, AuthorizableCo
      * @var array
      */
     protected $hidden = [
+        'email',
         'password',
+        'api_key',
+        'api_token',
         'created_at',
         'updated_at',
         'deleted_at'
