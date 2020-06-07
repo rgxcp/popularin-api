@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Comment;
 use App\Film;
 use App\Following;
 use App\Like;
@@ -12,13 +11,14 @@ use App\Watchlist;
 use App\Http\Traits\FilmTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
     use FilmTrait;
 
-    public function showFilmReviewsFromAll($tmdb_id) {
+    public function showsFilmReviewFromAll($tmdb_id) {
         Carbon::setLocale('id');
 
         $reviews = Review::with([
@@ -34,12 +34,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showFilmReviewsFromFollowing($tmdb_id) {
+    public function showsFilmReviewFromFollowing($tmdb_id) {
         Carbon::setLocale('id');
 
-        $authID = Auth::user()->id;
-
-        $followings = Following::select('following_id')->where('user_id', $authID);
+        $followings = Following::select('following_id')->where('user_id', Auth::id());
         
         $reviews = Review::with([
             'user'
@@ -55,12 +53,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showLikedReviews($tmdb_id) {
+    public function showsLikedReview($tmdb_id) {
         Carbon::setLocale('id');
 
-        $authID = Auth::user()->id;
-
-        $likes = Like::select('review_id')->where('user_id', $authID);
+        $likes = Like::select('review_id')->where('user_id', Auth::id());
 
         $reviews = Review::with([
             'user'
@@ -76,15 +72,13 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showSelfReviews($tmdb_id) {
+    public function showsSelfReview($tmdb_id) {
         Carbon::setLocale('id');
-
-        $authID = Auth::user()->id;
 
         $reviews = Review::with([
             'user'
         ])->where([
-            'user_id' => $authID,
+            'user_id' => Auth::id(),
             'tmdb_id' => $tmdb_id
         ])->orderBy('created_at', 'desc')
           ->paginate(50);
@@ -96,7 +90,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showUserReviews($user_id) {
+    public function showsUserReview($user_id) {
         Carbon::setLocale('id');
 
         $reviews = Review::with([
@@ -112,12 +106,10 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showTimeline() {
+    public function showsTimeline() {
         Carbon::setLocale('id');
-        
-        $authID = Auth::user()->id;
 
-        $followings = Following::select('following_id')->where('user_id', $authID);
+        $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $reviews = Review::with([
             'film', 'user'
@@ -135,31 +127,14 @@ class ReviewController extends Controller
     public function show($id) {
         Carbon::setLocale('id');
 
-        if (Auth::check()) {
-            $authID = Auth::user()->id;
-        } else {
-            $authID = 0;
-        }
-
         $review = Review::with([
             'film', 'user'
         ])->findOrFail($id);
 
-        $metadata = collect([
-            'is_liked' => Like::where(['user_id' => $authID, 'review_id' => $id])->exists(),
-            'total_comment' => Comment::where('review_id', $id)->count(),
-            'total_like' => Like::where('review_id', $id)->count()
-        ]);
-
-        $collection = collect([
-            'review' => $review,
-            'metadata' => $metadata
-        ]);
-
         return response()->json([
             'status' => 101,
             'message' => 'Request Retrieved',
-            'result' => $collection
+            'result' => $review
         ]);
     }
 
@@ -179,8 +154,6 @@ class ReviewController extends Controller
     }
 
     public function create(Request $request) {
-        $authID = Auth::user()->id;
-        
         $validator = Validator::make($request->all(), [
             'rating' => 'required|numeric|min:0.5|max:5.0',
             'review_detail' => 'required',
@@ -202,6 +175,8 @@ class ReviewController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
+            $authID = Auth::id();
+            
             $tmdb_id = $request['tmdb_id'];
 
             $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
@@ -239,10 +214,8 @@ class ReviewController extends Controller
 
     public function update(Request $request, $id) {
         $review = Review::findOrFail($id);
-        
-        $authID = Auth::user()->id;
-        
-        if ($review->user_id == $authID) {
+
+        if (Gate::allows('update-review', $review)) {
             $validator = Validator::make($request->all(), [
                 'rating' => 'required|numeric|min:0.5|max:5.0',
                 'review_detail' => 'required',
@@ -285,10 +258,8 @@ class ReviewController extends Controller
 
     public function delete($id) {
         $review = Review::findOrFail($id);
-        
-        $authID = Auth::user()->id;
-        
-        if ($review->user_id == $authID) {
+
+        if (Gate::allows('delete-review', $review)) {
             $review->delete();
 
             return response()->json([
