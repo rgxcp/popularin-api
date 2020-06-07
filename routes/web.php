@@ -39,7 +39,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->get('film/{tmdb_id}/reviews/from/following', 'ReviewController@showsFilmReviewFromFollowing');
         $router->get('film/{tmdb_id}/reviews/liked', 'ReviewController@showsLikedReview');
         $router->get('film/{tmdb_id}/reviews/self', 'ReviewController@showsSelfReview');
-        $router->get('review/timeline', 'ReviewController@showsTimeline');
+        $router->get('reviews/timeline', 'ReviewController@showsTimeline');
         $router->post('review', 'ReviewController@create');
         $router->put('review/{id}', 'ReviewController@update');
         $router->delete('review/{id}', 'ReviewController@delete');
