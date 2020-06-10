@@ -30,8 +30,8 @@ class UserController extends Controller
     }
 
     public function showSelf() {
-        $self = User::findOrFail(Auth::id());
-            
+        $self = Auth::user();
+
         return response()->json([
             'status' => 101,
             'message' => 'Request Retrieved',
@@ -183,7 +183,7 @@ class UserController extends Controller
     }
 
     public function signOut() {
-        User::findOrFail(Auth::id())->update([
+        Auth::user()->update([
             'api_token' => null
         ]);
         
@@ -193,109 +193,95 @@ class UserController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request, $id) {
-        if ($id == Auth::id()) {
-            $validator = Validator::make($request->all(), [
-                'full_name' => 'required',
-                'username' => 'required|alpha_dash|min:5|unique:users,username,'.$id,
-                'email' => 'required|email|unique:users,email,'.$id
-            ],[
-                'full_name.required' => 'Nama lengkap harus di isi',
-                'username.required' => 'Username harus di isi',
-                'email.required' => 'Alamat email harus di isi',
-                'alpha_dash' => 'Username tidak bisa mengandung spasi',
-                'email' => 'Format alamat email tidak sesuai',
-                'min' => 'Username minimal 5 karakter',
-                'username.unique' => 'Username tersebut sudah digunakan',
-                'email.unique' => 'Alamat email tersebut sudah digunakan'
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
-                ]);
-            } else {
-                $user = User::findOrFail($id);
+    public function updateProfile(Request $request) {
+        $user = Auth::user();
 
-                $full_name = $request['full_name'];
-                $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
-                
-                $user->update([
-                    'full_name' => $full_name,
-                    'username' => $request['username'],
-                    'email' => $request['email'],
-                    'profile_picture' => $profile_picture,
-                    'api_token' => Hash('SHA256', Str::random(100))
-                ]);
-                    
-                return response()->json([
-                    'status' => 303,
-                    'message' => 'Request Updated',
-                    'result' => $user->makeVisible('email', 'api_token')
-                ]);
-            }
-        } else {
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'required',
+            'username' => 'required|alpha_dash|min:5|unique:users,username,'.$user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id
+        ],[
+            'full_name.required' => 'Nama lengkap harus di isi',
+            'username.required' => 'Username harus di isi',
+            'email.required' => 'Alamat email harus di isi',
+            'alpha_dash' => 'Username tidak bisa mengandung spasi',
+            'email' => 'Format alamat email tidak sesuai',
+            'min' => 'Username minimal 5 karakter',
+            'username.unique' => 'Username tersebut sudah digunakan',
+            'email.unique' => 'Alamat email tersebut sudah digunakan'
+        ]);
+
+        if ($validator->fails()) {
             return response()->json([
-                'status' => 939,
-                'message' => 'Unauthorized'
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
+            ]);
+        } else {
+            $full_name = $request['full_name'];
+            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
+            
+            $user->update([
+                'full_name' => $full_name,
+                'username' => $request['username'],
+                'email' => $request['email'],
+                'profile_picture' => $profile_picture,
+                'api_token' => Hash('SHA256', Str::random(100))
+            ]);
+            
+            return response()->json([
+                'status' => 303,
+                'message' => 'Request Updated',
+                'result' => $user->makeVisible('email', 'api_token')
             ]);
         }
     }
 
-    public function updatePassword(Request $request, $id) {
-        if ($id == Auth::id()) {
-            $validator = Validator::make($request->all(), [
-                'current_password' => 'required',
-                'new_password' => 'required|min:8|different:current_password',
-                'confirm_password' => 'required|same:new_password'
-            ],[
-                'current_password.required' => 'Kata sandi lama harus di isi',
-                'new_password.required' => 'Kata sandi baru harus di isi',
-                'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',
-                'min' => 'Kata sandi baru minimal 8 karakter',
-                'different' => 'Kata sandi baru dan lama harus berbeda',
-                'same' => 'Kata sandi baru dan konfirmasi tidak sama'
+    public function updatePassword(Request $request) {
+        $user = Auth::user();
+        
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|different:current_password',
+            'confirm_password' => 'required|same:new_password'
+        ],[
+            'current_password.required' => 'Kata sandi lama harus di isi',
+            'new_password.required' => 'Kata sandi baru harus di isi',
+            'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',
+            'min' => 'Kata sandi baru minimal 8 karakter',
+            'different' => 'Kata sandi baru dan lama harus berbeda',
+            'same' => 'Kata sandi baru dan konfirmasi tidak sama'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 626,
+                'message' => 'Validator Fails',
+                'result' => $validator->errors()->all()
             ]);
-    
-            if ($validator->fails()) {
+        } else {
+            $isValid = Hash::check(
+                $request['current_password'],
+                $user->password
+            );
+
+            if ($isValid) {
+                $user->update([
+                    'password' => Hash::make($request['confirm_password']),
+                    'api_token' => Hash('SHA256', Str::random(100))
+                ]);
+
                 return response()->json([
-                    'status' => 626,
-                    'message' => 'Validator Fails',
-                    'result' => $validator->errors()->all()
+                    'status' => 303,
+                    'message' => 'Request Updated',
+                    'result' => $user->makeVisible('api_token')->makeHidden('full_name', 'username', 'profile_picture')
                 ]);
             } else {
-                $user = User::findOrFail($id);
-
-                $isValid = Hash::check(
-                    $request['current_password'],
-                    $user->password
-                );
-    
-                if ($isValid) {
-                    $user->update([
-                        'password' => Hash::make($request['confirm_password']),
-                        'api_token' => Hash('SHA256', Str::random(100))
-                    ]);
-                        
-                    return response()->json([
-                        'status' => 303,
-                        'message' => 'Request Updated',
-                        'result' => $user->makeVisible('api_token')->makeHidden('full_name', 'username', 'profile_picture')
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 616,
-                        'message' => 'Invalid Credentials'
-                    ]);
-                }
+                return response()->json([
+                    'status' => 616,
+                    'message' => 'Invalid Credentials'
+                ]);
             }
-        } else {
-            return response()->json([
-                'status' => 939,
-                'message' => 'Unauthorized'
-            ]);
         }
     }
 }

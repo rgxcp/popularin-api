@@ -47,8 +47,8 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         // User
         $router->get('user/self', 'UserController@showSelf');
         $router->post('user/signout', 'UserController@signOut');
-        $router->put('user/{id}', 'UserController@updateProfile');
-        $router->put('user/{id}/password', 'UserController@updatePassword');
+        $router->put('user/update/profile', 'UserController@updateProfile');
+        $router->put('user/update/password', 'UserController@updatePassword');
 
         // Watchlist
         $router->get('film/{tmdb_id}/watchlists/from/following', 'WatchlistController@showsFilmWatchlistFromFollowing');
