@@ -38,7 +38,7 @@ class Review extends Model
     }
 
     public function getTimestampAttribute() {
-        return $this->created_at->diffForHumans();
+        return $this->created_at->diffForHumans(null, true);
     }
 
     public function getIsLikedAttribute() {
