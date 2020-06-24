@@ -54,7 +54,7 @@ class FilmController extends Controller
         $average_rating = Review::where('tmdb_id', $tmdb_id)->avg('rating');
         
         $metadata = collect([
-            'average_rating' => isset($average_rating) ? $average_rating : 0,
+            'average_rating' => isset($average_rating) ? round($average_rating,2) : 0,
             'total_favorite' => Favorite::where('tmdb_id', $tmdb_id)->count(),
             'total_review' => Review::where('tmdb_id', $tmdb_id)->count(),
             'total_watchlist' => Watchlist::where('tmdb_id', $tmdb_id)->count()
