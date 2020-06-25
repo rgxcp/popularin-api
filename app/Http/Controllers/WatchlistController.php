@@ -17,7 +17,7 @@ class WatchlistController extends Controller
             'user'
         ])->where('tmdb_id', $tmdb_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
@@ -34,7 +34,7 @@ class WatchlistController extends Controller
         ])->where('tmdb_id', $tmdb_id)
           ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
@@ -48,7 +48,7 @@ class WatchlistController extends Controller
             'film'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,

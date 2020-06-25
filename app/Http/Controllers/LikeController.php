@@ -13,7 +13,7 @@ class LikeController extends Controller
             'user'
         ])->where('review_id', $review_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($likes[0]) ? 101 : 606,
@@ -30,7 +30,7 @@ class LikeController extends Controller
         ])->where('review_id', $review_id)
           ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($likes[0]) ? 101 : 606,

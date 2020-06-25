@@ -25,7 +25,7 @@ class ReviewController extends Controller
             'user'
         ])->where('tmdb_id', $tmdb_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -44,7 +44,7 @@ class ReviewController extends Controller
         ])->where('tmdb_id', $tmdb_id)
           ->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -63,7 +63,7 @@ class ReviewController extends Controller
         ])->where('tmdb_id', $tmdb_id)
           ->whereIn('id', $likes)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -81,7 +81,7 @@ class ReviewController extends Controller
             'user_id' => Auth::id(),
             'tmdb_id' => $tmdb_id
         ])->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -97,7 +97,7 @@ class ReviewController extends Controller
             'film'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -115,7 +115,7 @@ class ReviewController extends Controller
             'film', 'user'
         ])->whereIn('user_id', $followings)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
         
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,
@@ -144,7 +144,7 @@ class ReviewController extends Controller
         $reviews = Review::with([
             'film', 'user'
         ])->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($reviews[0]) ? 101 : 606,

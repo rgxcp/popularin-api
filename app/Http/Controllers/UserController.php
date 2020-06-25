@@ -20,7 +20,7 @@ class UserController extends Controller
         $users = User::where('full_name', 'like', '%'.$query.'%')
             ->orWhere('username', 'like', '%'.$query.'%')
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(20);
 
         return response()->json([
             'status' => isset($users[0]) ? 101 : 606,

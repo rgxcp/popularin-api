@@ -13,7 +13,7 @@ class FollowingController extends Controller
             'following'
         ])->where('user_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($followings[0]) ? 101 : 606,
@@ -27,7 +27,7 @@ class FollowingController extends Controller
             'follower'
         ])->where('following_id', $user_id)
           ->orderBy('created_at', 'desc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($followers[0]) ? 101 : 606,
@@ -43,7 +43,7 @@ class FollowingController extends Controller
 
         $mutuals = User::whereIn('id', $intersectFollowings)
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate(20);
 
         return response()->json([
             'status' => isset($mutuals[0]) ? 101 : 606,

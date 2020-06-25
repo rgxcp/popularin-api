@@ -18,7 +18,7 @@ class CommentController extends Controller
             'user'
         ])->where('review_id', $review_id)
           ->orderBy('created_at', 'asc')
-          ->paginate(50);
+          ->paginate(20);
 
         return response()->json([
             'status' => isset($comments[0]) ? 101 : 606,
