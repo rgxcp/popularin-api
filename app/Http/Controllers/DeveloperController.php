@@ -18,7 +18,6 @@ class DeveloperController extends Controller
             404 => 'Request Deleted',
             505 => 'Signed Up',
             515 => 'Signed In',
-            525 => 'Signed Out',
             606 => 'Request Not Found',
             616 => 'Invalid Credentials',
             626 => 'Validator Fails',

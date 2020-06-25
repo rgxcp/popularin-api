@@ -164,10 +164,6 @@ class UserController extends Controller
             );
 
             if ($isValid) {
-                $user->update([
-                    'api_token' => Hash('SHA256', Str::random(100))
-                ]);
-
                 return response()->json([
                     'status' => 515,
                     'message' => 'Signed In',
@@ -180,17 +176,6 @@ class UserController extends Controller
                 ]);
             }
         }
-    }
-
-    public function signOut() {
-        Auth::user()->update([
-            'api_token' => null
-        ]);
-        
-        return response()->json([
-            'status' => 525,
-            'message' => 'Signed Out'
-        ]);
     }
 
     public function updateProfile(Request $request) {
@@ -225,14 +210,13 @@ class UserController extends Controller
                 'full_name' => $full_name,
                 'username' => $request['username'],
                 'email' => $request['email'],
-                'profile_picture' => $profile_picture,
-                'api_token' => Hash('SHA256', Str::random(100))
+                'profile_picture' => $profile_picture
             ]);
             
             return response()->json([
                 'status' => 303,
                 'message' => 'Request Updated',
-                'result' => $user->makeVisible('email', 'api_token')
+                'result' => $user->makeVisible('email')
             ]);
         }
     }
@@ -267,14 +251,12 @@ class UserController extends Controller
 
             if ($isValid) {
                 $user->update([
-                    'password' => Hash::make($request['confirm_password']),
-                    'api_token' => Hash('SHA256', Str::random(100))
+                    'password' => Hash::make($request['confirm_password'])
                 ]);
 
                 return response()->json([
                     'status' => 303,
-                    'message' => 'Request Updated',
-                    'result' => $user->makeVisible('api_token')->makeHidden('full_name', 'username', 'profile_picture')
+                    'message' => 'Request Updated'
                 ]);
             } else {
                 return response()->json([
