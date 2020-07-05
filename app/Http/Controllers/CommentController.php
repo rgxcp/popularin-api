@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\Comment;
+use App\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -44,9 +45,13 @@ class CommentController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
+            $review_id = $request['review_id'];
+
+            Review::findOrFail($review_id);
+
             $comment = Comment::create([
                 'user_id' => Auth::id(),
-                'review_id' => $request['review_id'],
+                'review_id' => $review_id,
                 'comment_detail' => $request['comment_detail'],
                 'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
             ]);

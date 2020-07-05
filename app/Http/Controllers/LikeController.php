@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\Following;
+use App\Review;
 use App\Like;
 
 class LikeController extends Controller
@@ -40,6 +41,8 @@ class LikeController extends Controller
     }
 
     public function create($review_id) {
+        Review::findOrFail($review_id);
+
         $authID = Auth::id();
 
         $isLiked = Like::where([
