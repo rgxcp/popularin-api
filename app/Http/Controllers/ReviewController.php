@@ -59,12 +59,12 @@ class ReviewController extends Controller
     {
         Carbon::setLocale('id');
 
-        $likes = ReviewLike::select('review_id')->where('user_id', Auth::id());
+        $reviewLikes = ReviewLike::select('review_id')->where('user_id', Auth::id());
 
         $reviews = Review::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-            ->whereIn('id', $likes)
+            ->whereIn('id', $reviewLikes)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
