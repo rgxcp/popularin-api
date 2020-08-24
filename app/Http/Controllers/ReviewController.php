@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Film;
 use App\Following;
+use App\Http\Traits\FilmTrait;
+use App\Http\Traits\PointTrait;
 use App\Review;
 use App\ReviewLike;
 use App\Watchlist;
-use App\Http\Traits\FilmTrait;
-use App\Http\Traits\PointTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
