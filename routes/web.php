@@ -17,6 +17,11 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('comment', 'CommentController@create');
         $router->delete('comment/{id}', 'CommentController@delete');
 
+        // Comment Like
+        $router->get('comment/{comment_id}/likes/from/following', 'CommentLikeController@showsCommentLikeFromFollowing');
+        $router->post('comment/{comment_id}/like', 'CommentLikeController@create');
+        $router->delete('comment/{comment_id}/unlike', 'CommentLikeController@delete');
+
         // Favorite
         $router->get('film/{tmdb_id}/favorites/from/following', 'FavoriteController@showsFilmFavoriteFromFollowing');
         $router->post('film/{tmdb_id}/favorite', 'FavoriteController@create');
@@ -54,7 +59,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('film/{tmdb_id}/watchlist', 'WatchlistController@create');
         $router->delete('film/{tmdb_id}/unwatchlist', 'WatchlistController@delete');
     });
-    
+
     // Version
     $router->get('/', function () use ($router) {
         return $router->app->version();
@@ -62,6 +67,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
 
     // Comment
     $router->get('review/{review_id}/comments', 'CommentController@shows');
+
+    // Comment Like
+    $router->get('comment/{comment_id}/likes/from/all', 'CommentLikeController@showsCommentLikeFromAll');
 
     // Favorite
     $router->get('film/{tmdb_id}/favorites/from/all', 'FavoriteController@showsFilmFavoriteFromAll');
