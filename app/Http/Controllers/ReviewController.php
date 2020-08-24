@@ -9,6 +9,7 @@ use App\Review;
 use App\ReviewLike;
 use App\Watchlist;
 use App\Http\Traits\FilmTrait;
+use App\Http\Traits\PointTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Validator;
 class ReviewController extends Controller
 {
     use FilmTrait;
+    use PointTrait;
 
     public function showsFilmReviewFromAll($tmdb_id)
     {
@@ -194,6 +196,15 @@ class ReviewController extends Controller
                 $this->addFilm($tmdb_id);
             }
 
+            Review::create([
+                'user_id' => $authID,
+                'tmdb_id' => $tmdb_id,
+                'rating' => $request['rating'],
+                'review_detail' => $request['review_detail'],
+                'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
+                'watch_date' => $request['watch_date']
+            ]);
+
             $watchlist = Watchlist::where([
                 'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
@@ -205,14 +216,7 @@ class ReviewController extends Controller
                 $watchlist->delete();
             }
 
-            Review::create([
-                'user_id' => $authID,
-                'tmdb_id' => $tmdb_id,
-                'rating' => $request['rating'],
-                'review_detail' => $request['review_detail'],
-                'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
-                'watch_date' => $request['watch_date']
-            ]);
+            $this->addPoint($authID, $tmdb_id, 30, 'REVIEW');
 
             return response()->json([
                 'status' => 202,

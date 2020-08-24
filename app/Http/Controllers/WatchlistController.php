@@ -7,10 +7,13 @@ use App\Film;
 use App\Following;
 use App\Watchlist;
 use App\Http\Traits\FilmTrait;
+use App\Http\Traits\PointTrait;
+use App\Point;
 
 class WatchlistController extends Controller
 {
     use FilmTrait;
+    use PointTrait;
 
     public function showsFilmWatchlistFromAll($tmdb_id)
     {
@@ -85,6 +88,16 @@ class WatchlistController extends Controller
                 'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ]);
+
+            $pointExist = Point::where([
+                'user_id' => $authID,
+                'type_id' => $tmdb_id,
+                'type' => 'WATCHLIST'
+            ])->exists();
+
+            if (!$pointExist) {
+                $this->addPoint($authID, $tmdb_id, 5, 'WATCHLIST');
+            }
 
             return response()->json([
                 'status' => 202,

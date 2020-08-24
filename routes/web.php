@@ -82,6 +82,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
     $router->get('user/{user_id}/followings', 'FollowingController@showsFollowing');
     $router->get('user/{user_id}/followers', 'FollowingController@showsFollower');
 
+    // Point
+    $router->get('user/{user_id}/points', 'PointController@showsPointActivity');
+
     // Review
     $router->get('film/{tmdb_id}/reviews/from/all', 'ReviewController@showsFilmReviewFromAll');
     $router->get('user/{user_id}/reviews', 'ReviewController@showsUserReview');

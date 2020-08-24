@@ -7,10 +7,13 @@ use App\Favorite;
 use App\Film;
 use App\Following;
 use App\Http\Traits\FilmTrait;
+use App\Http\Traits\PointTrait;
+use App\Point;
 
 class FavoriteController extends Controller
 {
     use FilmTrait;
+    use PointTrait;
 
     public function showsFilmFavoriteFromAll($tmdb_id)
     {
@@ -85,6 +88,16 @@ class FavoriteController extends Controller
                 'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ]);
+
+            $pointExist = Point::where([
+                'user_id' => $authID,
+                'type_id' => $tmdb_id,
+                'type' => 'FAVORITE'
+            ])->exists();
+
+            if (!$pointExist) {
+                $this->addPoint($authID, $tmdb_id, 10, 'FAVORITE');
+            }
 
             return response()->json([
                 'status' => 202,
