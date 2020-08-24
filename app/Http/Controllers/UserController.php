@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Favorite;
 use App\Following;
+use App\Point;
 use App\Review;
 use App\User;
 use App\Watchlist;
@@ -49,6 +50,9 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
 
+        $total_point = Point::where('user_id', $id)->sum('total');
+        $total_point = $total_point < 0 ? $total_point : "+$total_point";
+
         $recent_favorites = Favorite::with([
             'film'
         ])->where('user_id', $id)
@@ -67,6 +71,7 @@ class UserController extends Controller
             'joined_since' => $user->created_at->diffForHumans(),
             'is_following' => Following::where(['user_id' => $authID, 'following_id' => $id])->exists(),
             'is_follower' => Following::where(['user_id' => $id, 'following_id' => $authID])->exists(),
+            'total_point' => $total_point,
             'total_following' => Following::where('user_id', $id)->count(),
             'total_follower' => Following::where('following_id', $id)->count(),
             'total_favorite' => Favorite::where('user_id', $id)->count(),
