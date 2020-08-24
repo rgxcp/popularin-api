@@ -15,8 +15,8 @@ class CreatePointsTable extends Migration
     {
         Schema::create('points', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id')->unsigned();
-            $table->integer('type_id')->unsigned();
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('type_id');
             $table->tinyInteger('total');
             $table->enum('type', [
                 'FAVORITE',
