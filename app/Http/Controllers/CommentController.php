@@ -12,14 +12,15 @@ use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
-    public function shows($review_id) {
+    public function shows($review_id)
+    {
         Carbon::setLocale('id');
 
         $comments = Comment::with([
             'user'
         ])->where('review_id', $review_id)
-          ->orderBy('created_at', 'asc')
-          ->paginate(20);
+            ->orderBy('created_at', 'asc')
+            ->paginate(20);
 
         return response()->json([
             'status' => isset($comments[0]) ? 101 : 606,
@@ -28,12 +29,13 @@ class CommentController extends Controller
         ]);
     }
 
-    public function create(Request $request) {
+    public function create(Request $request)
+    {
         Carbon::setLocale('id');
 
         $validator = Validator::make($request->all(), [
             'comment_detail' => 'required|max:300'
-        ],[
+        ], [
             'required' => 'Komen harus di isi',
             'max' => 'Komen maksimal 300 karakter'
         ]);
@@ -64,7 +66,8 @@ class CommentController extends Controller
         }
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $comment = Comment::findOrFail($id);
 
         if (Gate::allows('delete-comment', $comment)) {

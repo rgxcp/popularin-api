@@ -12,13 +12,14 @@ class WatchlistController extends Controller
 {
     use FilmTrait;
 
-    public function showsFilmWatchlistFromAll($tmdb_id) {
+    public function showsFilmWatchlistFromAll($tmdb_id)
+    {
         $watchlists = Watchlist::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
-        
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
             'message' => isset($watchlists[0]) ? 'Request Retrieved' : 'Request Not Found',
@@ -26,16 +27,17 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showsFilmWatchlistFromFollowing($tmdb_id) {
+    public function showsFilmWatchlistFromFollowing($tmdb_id)
+    {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $watchlists = Watchlist::with([
             'user'
         ])->where('tmdb_id', $tmdb_id)
-          ->whereIn('user_id', $followings)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
-        
+            ->whereIn('user_id', $followings)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
             'message' => isset($watchlists[0]) ? 'Request Retrieved' : 'Request Not Found',
@@ -43,13 +45,14 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showsUserWatchlist($user_id) {
+    public function showsUserWatchlist($user_id)
+    {
         $watchlists = Watchlist::with([
             'film'
         ])->where('user_id', $user_id)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
-        
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
         return response()->json([
             'status' => isset($watchlists[0]) ? 101 : 606,
             'message' => isset($watchlists[0]) ? 'Request Retrieved' : 'Request Not Found',
@@ -57,9 +60,10 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function create($tmdb_id) {
+    public function create($tmdb_id)
+    {
         $authID = Auth::id();
-        
+
         $inWatchlist = Watchlist::where([
             'user_id' => $authID,
             'tmdb_id' => $tmdb_id
@@ -76,12 +80,12 @@ class WatchlistController extends Controller
             if (!$filmExist) {
                 $this->addFilm($tmdb_id);
             }
-            
+
             Watchlist::create([
                 'user_id' => $authID,
                 'tmdb_id' => $tmdb_id
             ]);
-            
+
             return response()->json([
                 'status' => 202,
                 'message' => 'Request Created'
@@ -89,13 +93,14 @@ class WatchlistController extends Controller
         }
     }
 
-    public function delete($tmdb_id) {
+    public function delete($tmdb_id)
+    {
         Watchlist::where([
             'user_id' => Auth::id(),
             'tmdb_id' => $tmdb_id
         ])->firstOrFail()
-          ->delete();
-        
+            ->delete();
+
         return response()->json([
             'status' => 404,
             'message' => 'Request Deleted'

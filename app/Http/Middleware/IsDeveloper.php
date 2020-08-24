@@ -25,7 +25,7 @@ class IsDeveloper
                 'problem' => 'You must sign up or sign in as developer to use all the feature of this API'
             ]);
         }
-        
+
         return $next($request);
     }
 }

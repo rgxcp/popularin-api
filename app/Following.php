@@ -17,11 +17,13 @@ class Following extends Model
         'updated_at'
     ];
 
-    public function following() {
+    public function following()
+    {
         return $this->belongsTo(User::class, 'following_id', 'id');
     }
 
-    public function follower() {
+    public function follower()
+    {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

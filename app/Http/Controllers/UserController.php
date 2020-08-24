@@ -16,9 +16,10 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function search($query) {
-        $users = User::where('full_name', 'like', '%'.$query.'%')
-            ->orWhere('username', 'like', '%'.$query.'%')
+    public function search($query)
+    {
+        $users = User::where('full_name', 'like', '%' . $query . '%')
+            ->orWhere('username', 'like', '%' . $query . '%')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -29,7 +30,8 @@ class UserController extends Controller
         ]);
     }
 
-    public function showSelf() {
+    public function showSelf()
+    {
         $self = Auth::user();
 
         return response()->json([
@@ -39,7 +41,8 @@ class UserController extends Controller
         ]);
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         Carbon::setLocale('id');
 
         if (Auth::check()) {
@@ -53,16 +56,16 @@ class UserController extends Controller
         $recent_favorites = Favorite::with([
             'film'
         ])->where('user_id', $id)
-          ->orderBy('created_at', 'desc')
-          ->take(4)
-          ->get();
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get();
 
         $recent_reviews = Review::with([
             'film'
         ])->where('user_id', $id)
-          ->orderBy('created_at', 'desc')
-          ->take(4)
-          ->get();
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get();
 
         $metadata = collect([
             'joined_since' => $user->created_at->diffForHumans(),
@@ -93,13 +96,14 @@ class UserController extends Controller
         ]);
     }
 
-    public function signUp(Request $request) {
+    public function signUp(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
             'username' => 'required|alpha_dash|min:5|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|different:username'
-        ],[
+        ], [
             'full_name.required' => 'Nama lengkap harus di isi',
             'username.required' => 'Username harus di isi',
             'email.required' => 'Alamat email harus di isi',
@@ -121,8 +125,8 @@ class UserController extends Controller
             ]);
         } else {
             $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
-    
+            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+
             $user = User::create([
                 'full_name' => $full_name,
                 'username' => strtolower($request['username']),
@@ -131,7 +135,7 @@ class UserController extends Controller
                 'password' => Hash::make($request['password']),
                 'api_token' => Hash('SHA256', Str::random(100))
             ]);
-    
+
             return response()->json([
                 'status' => 505,
                 'message' => 'Signed Up',
@@ -140,11 +144,12 @@ class UserController extends Controller
         }
     }
 
-    public function signIn(Request $request) {
+    public function signIn(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'username' => 'required',
             'password' => 'required'
-        ],[
+        ], [
             'username.required' => 'Username harus di isi',
             'password.required' => 'Kata sandi harus di isi'
         ]);
@@ -178,14 +183,15 @@ class UserController extends Controller
         }
     }
 
-    public function updateProfile(Request $request) {
+    public function updateProfile(Request $request)
+    {
         $user = Auth::user();
 
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
-            'username' => 'required|alpha_dash|min:5|unique:users,username,'.$user->id,
-            'email' => 'required|email|unique:users,email,'.$user->id
-        ],[
+            'username' => 'required|alpha_dash|min:5|unique:users,username,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id
+        ], [
             'full_name.required' => 'Nama lengkap harus di isi',
             'username.required' => 'Username harus di isi',
             'email.required' => 'Alamat email harus di isi',
@@ -204,15 +210,15 @@ class UserController extends Controller
             ]);
         } else {
             $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
-            
+            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+
             $user->update([
                 'full_name' => $full_name,
                 'username' => $request['username'],
                 'email' => $request['email'],
                 'profile_picture' => $profile_picture
             ]);
-            
+
             return response()->json([
                 'status' => 303,
                 'message' => 'Request Updated',
@@ -221,14 +227,15 @@ class UserController extends Controller
         }
     }
 
-    public function updatePassword(Request $request) {
+    public function updatePassword(Request $request)
+    {
         $user = Auth::user();
-        
+
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
             'new_password' => 'required|min:8|different:current_password',
             'confirm_password' => 'required|same:new_password'
-        ],[
+        ], [
             'current_password.required' => 'Kata sandi lama harus di isi',
             'new_password.required' => 'Kata sandi baru harus di isi',
             'confirm_password.required' => 'Konfirmasi kata sandi harus di isi',

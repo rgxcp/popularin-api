@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 
 class DeveloperController extends Controller
 {
-    public function showStatus() {
+    public function showStatus()
+    {
         return response()->json([
             101 => 'Request Retrieved',
             202 => 'Request Created',
@@ -32,13 +33,14 @@ class DeveloperController extends Controller
         ]);
     }
 
-    public function signUp(Request $request) {
+    public function signUp(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
             'username' => 'required|alpha_dash|min:5|unique:developers,username',
             'email' => 'required|email|unique:developers,email',
             'password' => 'required|min:8|different:username'
-        ],[
+        ], [
             'full_name.required' => 'Nama lengkap harus di isi',
             'username.required' => 'Username harus di isi',
             'email.required' => 'Alamat email harus di isi',
@@ -60,8 +62,8 @@ class DeveloperController extends Controller
             ]);
         } else {
             $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name='.preg_replace('/\s+/', '+', $full_name).'&size=512';
-    
+            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+
             $developer = Developer::create([
                 'full_name' => $full_name,
                 'username' => strtolower($request['username']),
@@ -71,7 +73,7 @@ class DeveloperController extends Controller
                 'api_key' => Hash('SHA256', Str::random(100)),
                 'api_token' => Hash('SHA256', Str::random(100))
             ]);
-    
+
             return response()->json([
                 'status' => 505,
                 'message' => 'Signed Up',

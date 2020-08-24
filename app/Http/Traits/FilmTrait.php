@@ -6,8 +6,9 @@ use App\Film;
 
 trait FilmTrait
 {
-    public function addFilm($tmdb_id) {
-        $url = "https://api.themoviedb.org/3/movie/".$tmdb_id."?api_key=".env('TMDB_API_KEY');
+    public function addFilm($tmdb_id)
+    {
+        $url = "https://api.themoviedb.org/3/movie/" . $tmdb_id . "?api_key=" . env('TMDB_API_KEY');
         $json = file_get_contents($url);
         $data = json_decode($json, true);
 

@@ -30,15 +30,18 @@ class Comment extends Model
         'timestamp'
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function getUserAttribute() {
+    public function getUserAttribute()
+    {
         return Auth::user();
     }
 
-    public function getTimestampAttribute() {
+    public function getTimestampAttribute()
+    {
         return $this->created_at->diffForHumans();
     }
 }

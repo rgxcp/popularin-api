@@ -10,15 +10,16 @@ use App\Watchlist;
 
 class FilmController extends Controller
 {
-    public function showSelf($tmdb_id) {
+    public function showSelf($tmdb_id)
+    {
         $authID = Auth::id();
 
         $last_rate = Review::select('rating')->where([
             'user_id' => $authID,
             'tmdb_id' => $tmdb_id
         ])->latest()
-          ->first();
-        
+            ->first();
+
         $in_favorite = Favorite::where([
             'user_id' => $authID,
             'tmdb_id' => $tmdb_id
@@ -48,13 +49,14 @@ class FilmController extends Controller
         ]);
     }
 
-    public function show($tmdb_id) {
+    public function show($tmdb_id)
+    {
         $film = Film::where('tmdb_id', $tmdb_id)->firstOrFail();
 
         $average_rating = Review::where('tmdb_id', $tmdb_id)->avg('rating');
-        
+
         $metadata = collect([
-            'average_rating' => isset($average_rating) ? round($average_rating,2) : 0,
+            'average_rating' => isset($average_rating) ? round($average_rating, 2) : 0,
             'total_favorite' => Favorite::where('tmdb_id', $tmdb_id)->count(),
             'total_review' => Review::where('tmdb_id', $tmdb_id)->count(),
             'total_watchlist' => Watchlist::where('tmdb_id', $tmdb_id)->count()

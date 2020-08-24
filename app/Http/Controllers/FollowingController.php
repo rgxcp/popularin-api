@@ -8,12 +8,13 @@ use App\User;
 
 class FollowingController extends Controller
 {
-    public function showsFollowing($user_id) {
+    public function showsFollowing($user_id)
+    {
         $followings = Following::with([
             'following'
         ])->where('user_id', $user_id)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         return response()->json([
             'status' => isset($followings[0]) ? 101 : 606,
@@ -22,12 +23,13 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showsFollower($user_id) {
+    public function showsFollower($user_id)
+    {
         $followers = Following::with([
             'follower'
         ])->where('following_id', $user_id)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         return response()->json([
             'status' => isset($followers[0]) ? 101 : 606,
@@ -36,7 +38,8 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showsMutual($user_id) {
+    public function showsMutual($user_id)
+    {
         $authFollowings = Following::select('following_id')->where('user_id', Auth::id())->pluck('following_id')->toArray();
         $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
         $intersectFollowings = array_values(array_intersect($authFollowings, $userFollowings));
@@ -52,7 +55,8 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function create($user_id) {
+    public function create($user_id)
+    {
         User::findOrFail($user_id);
 
         $authID = Auth::id();
@@ -85,12 +89,13 @@ class FollowingController extends Controller
         }
     }
 
-    public function delete($user_id) {
+    public function delete($user_id)
+    {
         Following::where([
             'user_id' => Auth::id(),
             'following_id' => $user_id
         ])->firstOrFail()
-          ->delete();
+            ->delete();
 
         return response()->json([
             'status' => 404,
