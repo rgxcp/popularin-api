@@ -29,33 +29,39 @@ class Review extends Model
         'total_like'
     ];
 
-    public function film() {
+    public function film()
+    {
         return $this->belongsTo(Film::class, 'tmdb_id', 'tmdb_id');
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function getTimestampAttribute() {
+    public function getTimestampAttribute()
+    {
         return $this->created_at->diffForHumans(null, true);
     }
 
-    public function getIsLikedAttribute() {
+    public function getIsLikedAttribute()
+    {
         if (Auth::check()) {
             $authID = Auth::id();
         } else {
             $authID = 0;
         }
 
-        return Like::where(['user_id' => $authID, 'review_id' => $this->id])->exists();
+        return ReviewLike::where(['user_id' => $authID, 'review_id' => $this->id])->exists();
     }
 
-    public function getTotalCommentAttribute() {
+    public function getTotalCommentAttribute()
+    {
         return Comment::where('review_id', $this->id)->count();
     }
 
-    public function getTotalLikeAttribute() {
-        return Like::where('review_id', $this->id)->count();
+    public function getTotalLikeAttribute()
+    {
+        return ReviewLike::where('review_id', $this->id)->count();
     }
 }

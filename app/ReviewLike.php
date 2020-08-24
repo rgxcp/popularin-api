@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Like extends Model
+class ReviewLike extends Model
 {
     protected $guarded = [
         // All columns are guarded
@@ -17,7 +17,8 @@ class Like extends Model
         'updated_at'
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }

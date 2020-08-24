@@ -5,47 +5,50 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Following;
 use App\Review;
-use App\Like;
+use App\ReviewLike;
 
-class LikeController extends Controller
+class ReviewLikeController extends Controller
 {
-    public function showsLikeFromAll($review_id) {
-        $likes = Like::with([
+    public function showsReviewLikeFromAll($review_id)
+    {
+        $reviewLikes = ReviewLike::with([
             'user'
         ])->where('review_id', $review_id)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
-        
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
         return response()->json([
-            'status' => isset($likes[0]) ? 101 : 606,
-            'message' => isset($likes[0]) ? 'Request Retrieved' : 'Request Not Found',
-            'result' => isset($likes[0]) ? $likes : null
+            'status' => isset($reviewLikes[0]) ? 101 : 606,
+            'message' => isset($reviewLikes[0]) ? 'Request Retrieved' : 'Request Not Found',
+            'result' => isset($reviewLikes[0]) ? $reviewLikes : null
         ]);
     }
 
-    public function showsLikeFromFollowing($review_id) {
+    public function showsReviewLikeFromFollowing($review_id)
+    {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
-        $likes = Like::with([
+        $reviewLikes = ReviewLike::with([
             'user'
         ])->where('review_id', $review_id)
-          ->whereIn('user_id', $followings)
-          ->orderBy('created_at', 'desc')
-          ->paginate(20);
-        
+            ->whereIn('user_id', $followings)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
         return response()->json([
-            'status' => isset($likes[0]) ? 101 : 606,
-            'message' => isset($likes[0]) ? 'Request Retrieved' : 'Request Not Found',
-            'result' => isset($likes[0]) ? $likes : null
+            'status' => isset($reviewLikes[0]) ? 101 : 606,
+            'message' => isset($reviewLikes[0]) ? 'Request Retrieved' : 'Request Not Found',
+            'result' => isset($reviewLikes[0]) ? $reviewLikes : null
         ]);
     }
 
-    public function create($review_id) {
+    public function create($review_id)
+    {
         Review::findOrFail($review_id);
 
         $authID = Auth::id();
 
-        $isLiked = Like::where([
+        $isLiked = ReviewLike::where([
             'user_id' => $authID,
             'review_id' => $review_id
         ])->exists();
@@ -56,11 +59,11 @@ class LikeController extends Controller
                 'message' => 'Already Liked'
             ]);
         } else {
-            Like::create([
+            ReviewLike::create([
                 'user_id' => $authID,
                 'review_id' => $review_id
             ]);
-            
+
             return response()->json([
                 'status' => 202,
                 'message' => 'Request Created'
@@ -68,13 +71,14 @@ class LikeController extends Controller
         }
     }
 
-    public function delete($review_id) {
-        Like::where([
+    public function delete($review_id)
+    {
+        ReviewLike::where([
             'user_id' => Auth::id(),
             'review_id' => $review_id
         ])->firstOrFail()
-          ->delete();
-        
+            ->delete();
+
         return response()->json([
             'status' => 404,
             'message' => 'Request Deleted'

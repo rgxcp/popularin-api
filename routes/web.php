@@ -35,11 +35,6 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('user/{user_id}/follow', 'FollowingController@create');
         $router->delete('user/{user_id}/unfollow', 'FollowingController@delete');
 
-        // Like
-        $router->get('review/{review_id}/likes/from/following', 'LikeController@showsLikeFromFollowing');
-        $router->post('review/{review_id}/like', 'LikeController@create');
-        $router->delete('review/{review_id}/unlike', 'LikeController@delete');
-
         // Review
         $router->get('film/{tmdb_id}/reviews/from/following', 'ReviewController@showsFilmReviewFromFollowing');
         $router->get('film/{tmdb_id}/reviews/liked', 'ReviewController@showsLikedReview');
@@ -48,6 +43,11 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('review', 'ReviewController@create');
         $router->put('review/{id}', 'ReviewController@update');
         $router->delete('review/{id}', 'ReviewController@delete');
+
+        // Review Like
+        $router->get('review/{review_id}/likes/from/following', 'ReviewLikeController@showsReviewLikeFromFollowing');
+        $router->post('review/{review_id}/like', 'ReviewLikeController@create');
+        $router->delete('review/{review_id}/unlike', 'ReviewLikeController@delete');
 
         // User
         $router->get('user/self', 'UserController@showSelf');
@@ -82,14 +82,14 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
     $router->get('user/{user_id}/followings', 'FollowingController@showsFollowing');
     $router->get('user/{user_id}/followers', 'FollowingController@showsFollower');
 
-    // Like
-    $router->get('review/{review_id}/likes/from/all', 'LikeController@showsLikeFromAll');
-
     // Review
     $router->get('film/{tmdb_id}/reviews/from/all', 'ReviewController@showsFilmReviewFromAll');
     $router->get('user/{user_id}/reviews', 'ReviewController@showsUserReview');
     $router->get('review/{id}', 'ReviewController@show');
     $router->get('reviews', 'ReviewController@shows');
+
+    // Review Like
+    $router->get('review/{review_id}/likes/from/all', 'ReviewLikeController@showsReviewLikeFromAll');
 
     // User
     $router->get('user/search/{query}', 'UserController@search');
