@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Favorite;
 use App\Film;
 use App\Review;
 use App\Watchlist;
+use Illuminate\Support\Facades\Auth;
 
 class FilmController extends Controller
 {

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Following;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 
 class FollowingController extends Controller
 {

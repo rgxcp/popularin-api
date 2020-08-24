@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Following;
 use App\Review;
 use App\ReviewLike;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewLikeController extends Controller
 {

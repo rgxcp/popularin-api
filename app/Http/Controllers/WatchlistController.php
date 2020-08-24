@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Film;
 use App\Following;
 use App\Watchlist;
 use App\Http\Traits\FilmTrait;
 use App\Http\Traits\PointTrait;
 use App\Point;
+use Illuminate\Support\Facades\Auth;
 
 class WatchlistController extends Controller
 {

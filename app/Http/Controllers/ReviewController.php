@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Film;
 use App\Following;
 use App\Review;
@@ -12,6 +11,7 @@ use App\Http\Traits\FilmTrait;
 use App\Http\Traits\PointTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 

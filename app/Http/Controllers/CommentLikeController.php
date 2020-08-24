@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Comment;
 use App\CommentLike;
 use App\Following;
+use Illuminate\Support\Facades\Auth;
 
 class CommentLikeController extends Controller
 {
