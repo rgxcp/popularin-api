@@ -1,4 +1,4 @@
-# PHP - Lumen - Popularin APi
+# PHP - Lumen - Popularin API
 **EN**: API for Popularin - Indonesian film social media.
 
 **ID**: API untuk Popularin - Sosial media film Indonesia.
@@ -15,3 +15,11 @@
 4. Run server `php -S localhost:8000 -t public`.
 5. Fire-up Postman.
 6. Do-what-you-want-with-it!
+
+## Changelog
+### 1.1.0 (Ongoing)
+- Adding like comment feature
+- Adding point feature
+- Showing total point on user detail
+### 1.0.0
+- Firing up initial version of Popularin API!
