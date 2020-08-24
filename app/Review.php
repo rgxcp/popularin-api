@@ -46,11 +46,7 @@ class Review extends Model
 
     public function getIsLikedAttribute()
     {
-        if (Auth::check()) {
-            $authID = Auth::id();
-        } else {
-            $authID = 0;
-        }
+        $authID = Auth::check() ? Auth::id() : 0;
 
         return ReviewLike::where(['user_id' => $authID, 'review_id' => $this->id])->exists();
     }

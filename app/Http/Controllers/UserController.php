@@ -45,11 +45,7 @@ class UserController extends Controller
     {
         Carbon::setLocale('id');
 
-        if (Auth::check()) {
-            $authID = Auth::id();
-        } else {
-            $authID = 0;
-        }
+        $authID = Auth::check() ? Auth::id() : 0;
 
         $user = User::findOrFail($id);
 
