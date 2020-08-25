@@ -26,19 +26,19 @@ class Point extends Model
         $type = $this->type;
 
         switch ($type) {
-            case "FAVORITE":
+            case 'FAVORITE':
                 $film = Film::select('title', 'release_date')->where('tmdb_id', $this->type_id)->first();
                 $filmTitle = $film['title'];
                 $filmYear = substr($film['release_date'], 0, 4);
                 return "Memfavoritkan film $filmTitle ($filmYear).";
                 break;
-            case "REVIEW":
+            case 'REVIEW':
                 $film = Film::select('title', 'release_date')->where('tmdb_id', $this->type_id)->first();
                 $filmTitle = $film['title'];
                 $filmYear = substr($film['release_date'], 0, 4);
                 return "Mengulas film $filmTitle ($filmYear).";
                 break;
-            case "WATCHLIST":
+            case 'WATCHLIST':
                 $film = Film::select('title', 'release_date')->where('tmdb_id', $this->type_id)->first();
                 $filmTitle = $film['title'];
                 $filmYear = substr($film['release_date'], 0, 4);
