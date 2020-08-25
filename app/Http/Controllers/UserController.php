@@ -50,17 +50,17 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
 
-        $total_point = Point::where('user_id', $id)->sum('total');
-        $total_point = $total_point < 0 ? $total_point : "+$total_point";
+        $totalPoint = Point::where('user_id', $id)->sum('total');
+        $totalPoint = $totalPoint < 0 ? $totalPoint : "+$totalPoint";
 
-        $recent_favorites = Favorite::with([
+        $recentFavorites = Favorite::with([
             'film'
         ])->where('user_id', $id)
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
 
-        $recent_reviews = Review::with([
+        $recentReviews = Review::with([
             'film'
         ])->where('user_id', $id)
             ->orderBy('created_at', 'desc')
@@ -71,7 +71,7 @@ class UserController extends Controller
             'joined_since' => $user->created_at->diffForHumans(),
             'is_following' => Following::where(['user_id' => $authID, 'following_id' => $id])->exists(),
             'is_follower' => Following::where(['user_id' => $id, 'following_id' => $authID])->exists(),
-            'total_point' => $total_point,
+            'total_point' => $totalPoint,
             'total_following' => Following::where('user_id', $id)->count(),
             'total_follower' => Following::where('following_id', $id)->count(),
             'total_favorite' => Favorite::where('user_id', $id)->count(),
@@ -80,8 +80,8 @@ class UserController extends Controller
         ]);
 
         $activity = collect([
-            'recent_favorites' => isset($recent_favorites[0]) ? $recent_favorites : null,
-            'recent_reviews' => isset($recent_reviews[0]) ? $recent_reviews : null
+            'recent_favorites' => isset($recentFavorites[0]) ? $recentFavorites : null,
+            'recent_reviews' => isset($recentReviews[0]) ? $recentReviews : null
         ]);
 
         $collection = collect([
@@ -125,14 +125,14 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+            $fullName = $request['full_name'];
+            $profilePicture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $fullName) . '&size=512';
 
             $user = User::create([
-                'full_name' => $full_name,
+                'full_name' => $fullName,
                 'username' => strtolower($request['username']),
                 'email' => $request['email'],
-                'profile_picture' => $profile_picture,
+                'profile_picture' => $profilePicture,
                 'password' => Hash::make($request['password']),
                 'api_token' => Hash('SHA256', Str::random(100))
             ]);
@@ -210,14 +210,14 @@ class UserController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+            $fullName = $request['full_name'];
+            $profilePicture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $fullName) . '&size=512';
 
             $user->update([
-                'full_name' => $full_name,
+                'full_name' => $fullName,
                 'username' => $request['username'],
                 'email' => $request['email'],
-                'profile_picture' => $profile_picture
+                'profile_picture' => $profilePicture
             ]);
 
             return response()->json([

@@ -15,11 +15,11 @@ class FavoriteController extends Controller
     use FilmTrait;
     use PointTrait;
 
-    public function showsFilmFavoriteFromAll($tmdb_id)
+    public function showsFilmFavoriteFromAll($tmdbID)
     {
         $favorites = Favorite::with([
             'user'
-        ])->where('tmdb_id', $tmdb_id)
+        ])->where('tmdb_id', $tmdbID)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -30,13 +30,13 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function showsFilmFavoriteFromFollowing($tmdb_id)
+    public function showsFilmFavoriteFromFollowing($tmdbID)
     {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $favorites = Favorite::with([
             'user'
-        ])->where('tmdb_id', $tmdb_id)
+        ])->where('tmdb_id', $tmdbID)
             ->whereIn('user_id', $followings)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -48,11 +48,11 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function showsUserFavorite($user_id)
+    public function showsUserFavorite($userID)
     {
         $favorites = Favorite::with([
             'film'
-        ])->where('user_id', $user_id)
+        ])->where('user_id', $userID)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -63,13 +63,13 @@ class FavoriteController extends Controller
         ]);
     }
 
-    public function create($tmdb_id)
+    public function create($tmdbID)
     {
         $authID = Auth::id();
 
         $inFavorite = Favorite::where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->exists();
 
         if ($inFavorite) {
@@ -78,25 +78,25 @@ class FavoriteController extends Controller
                 'message' => 'Already Favorited'
             ]);
         } else {
-            $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
+            $filmExist = Film::where('tmdb_id', $tmdbID)->exists();
 
             if (!$filmExist) {
-                $this->addFilm($tmdb_id);
+                $this->addFilm($tmdbID);
             }
 
             Favorite::create([
                 'user_id' => $authID,
-                'tmdb_id' => $tmdb_id
+                'tmdb_id' => $tmdbID
             ]);
 
             $pointExist = Point::where([
                 'user_id' => $authID,
-                'type_id' => $tmdb_id,
+                'type_id' => $tmdbID,
                 'type' => 'FAVORITE'
             ])->exists();
 
             if (!$pointExist) {
-                $this->addPoint($authID, $tmdb_id, 10, 'FAVORITE');
+                $this->addPoint($authID, $tmdbID, 10, 'FAVORITE');
             }
 
             return response()->json([
@@ -106,11 +106,11 @@ class FavoriteController extends Controller
         }
     }
 
-    public function delete($tmdb_id)
+    public function delete($tmdbID)
     {
         Favorite::where([
             'user_id' => Auth::id(),
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->firstOrFail()
             ->delete();
 

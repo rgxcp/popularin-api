@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class FollowingController extends Controller
 {
-    public function showsFollowing($user_id)
+    public function showsFollowing($userID)
     {
         $followings = Following::with([
             'following'
-        ])->where('user_id', $user_id)
+        ])->where('user_id', $userID)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -23,11 +23,11 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showsFollower($user_id)
+    public function showsFollower($userID)
     {
         $followers = Following::with([
             'follower'
-        ])->where('following_id', $user_id)
+        ])->where('following_id', $userID)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -38,10 +38,10 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function showsMutual($user_id)
+    public function showsMutual($userID)
     {
         $authFollowings = Following::select('following_id')->where('user_id', Auth::id())->pluck('following_id')->toArray();
-        $userFollowings = Following::select('following_id')->where('user_id', $user_id)->pluck('following_id')->toArray();
+        $userFollowings = Following::select('following_id')->where('user_id', $userID)->pluck('following_id')->toArray();
         $intersectFollowings = array_values(array_intersect($authFollowings, $userFollowings));
 
         $mutuals = User::whereIn('id', $intersectFollowings)
@@ -55,18 +55,18 @@ class FollowingController extends Controller
         ]);
     }
 
-    public function create($user_id)
+    public function create($userID)
     {
-        User::findOrFail($user_id);
+        User::findOrFail($userID);
 
         $authID = Auth::id();
 
         $isFollowed = Following::where([
             'user_id' => $authID,
-            'following_id' => $user_id
+            'following_id' => $userID
         ])->exists();
 
-        if ($user_id == $authID) {
+        if ($userID == $authID) {
             return response()->json([
                 'status' => 636,
                 'message' => 'Can\'t Follow Self'
@@ -79,7 +79,7 @@ class FollowingController extends Controller
         } else {
             Following::create([
                 'user_id' => $authID,
-                'following_id' => $user_id
+                'following_id' => $userID
             ]);
 
             return response()->json([
@@ -89,11 +89,11 @@ class FollowingController extends Controller
         }
     }
 
-    public function delete($user_id)
+    public function delete($userID)
     {
         Following::where([
             'user_id' => Auth::id(),
-            'following_id' => $user_id
+            'following_id' => $userID
         ])->firstOrFail()
             ->delete();
 

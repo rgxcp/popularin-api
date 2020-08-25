@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewLikeController extends Controller
 {
-    public function showsReviewLikeFromAll($review_id)
+    public function showsReviewLikeFromAll($reviewID)
     {
         $reviewLikes = ReviewLike::with([
             'user'
-        ])->where('review_id', $review_id)
+        ])->where('review_id', $reviewID)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -24,13 +24,13 @@ class ReviewLikeController extends Controller
         ]);
     }
 
-    public function showsReviewLikeFromFollowing($review_id)
+    public function showsReviewLikeFromFollowing($reviewID)
     {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $reviewLikes = ReviewLike::with([
             'user'
-        ])->where('review_id', $review_id)
+        ])->where('review_id', $reviewID)
             ->whereIn('user_id', $followings)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -42,15 +42,15 @@ class ReviewLikeController extends Controller
         ]);
     }
 
-    public function create($review_id)
+    public function create($reviewID)
     {
-        Review::findOrFail($review_id);
+        Review::findOrFail($reviewID);
 
         $authID = Auth::id();
 
         $isLiked = ReviewLike::where([
             'user_id' => $authID,
-            'review_id' => $review_id
+            'review_id' => $reviewID
         ])->exists();
 
         if ($isLiked) {
@@ -61,7 +61,7 @@ class ReviewLikeController extends Controller
         } else {
             ReviewLike::create([
                 'user_id' => $authID,
-                'review_id' => $review_id
+                'review_id' => $reviewID
             ]);
 
             return response()->json([
@@ -71,11 +71,11 @@ class ReviewLikeController extends Controller
         }
     }
 
-    public function delete($review_id)
+    public function delete($reviewID)
     {
         ReviewLike::where([
             'user_id' => Auth::id(),
-            'review_id' => $review_id
+            'review_id' => $reviewID
         ])->firstOrFail()
             ->delete();
 

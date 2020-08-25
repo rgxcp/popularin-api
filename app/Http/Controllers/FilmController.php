@@ -10,36 +10,36 @@ use Illuminate\Support\Facades\Auth;
 
 class FilmController extends Controller
 {
-    public function showSelf($tmdb_id)
+    public function showSelf($tmdbID)
     {
         $authID = Auth::id();
 
-        $last_rate = Review::select('rating')->where([
+        $lastRate = Review::select('rating')->where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->latest()
             ->first();
 
-        $in_favorite = Favorite::where([
+        $inFavorite = Favorite::where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->exists();
 
-        $in_review = Review::where([
+        $inReview = Review::where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->exists();
 
-        $in_watchlist = Watchlist::where([
+        $inWatchlist = Watchlist::where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdb_id
+            'tmdb_id' => $tmdbID
         ])->exists();
 
         $collection = collect([
-            'last_rate' => isset($last_rate['rating']) ? $last_rate['rating'] : 0,
-            'in_favorite' => $in_favorite,
-            'in_review' => $in_review,
-            'in_watchlist' => $in_watchlist
+            'last_rate' => isset($lastRate['rating']) ? $lastRate['rating'] : 0,
+            'in_favorite' => $inFavorite,
+            'in_review' => $inReview,
+            'in_watchlist' => $inWatchlist
         ]);
 
         return response()->json([
@@ -49,17 +49,17 @@ class FilmController extends Controller
         ]);
     }
 
-    public function show($tmdb_id)
+    public function show($tmdbID)
     {
-        $film = Film::where('tmdb_id', $tmdb_id)->firstOrFail();
+        $film = Film::where('tmdb_id', $tmdbID)->firstOrFail();
 
-        $average_rating = Review::where('tmdb_id', $tmdb_id)->avg('rating');
+        $averageRating = Review::where('tmdb_id', $tmdbID)->avg('rating');
 
         $metadata = collect([
-            'average_rating' => isset($average_rating) ? round($average_rating, 2) : 0,
-            'total_favorite' => Favorite::where('tmdb_id', $tmdb_id)->count(),
-            'total_review' => Review::where('tmdb_id', $tmdb_id)->count(),
-            'total_watchlist' => Watchlist::where('tmdb_id', $tmdb_id)->count()
+            'average_rating' => isset($averageRating) ? round($averageRating, 2) : 0,
+            'total_favorite' => Favorite::where('tmdb_id', $tmdbID)->count(),
+            'total_review' => Review::where('tmdb_id', $tmdbID)->count(),
+            'total_watchlist' => Watchlist::where('tmdb_id', $tmdbID)->count()
         ]);
 
         $collection = collect([

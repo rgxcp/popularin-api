@@ -61,14 +61,14 @@ class DeveloperController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $full_name = $request['full_name'];
-            $profile_picture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $full_name) . '&size=512';
+            $fullName = $request['full_name'];
+            $profilePicture = 'https://ui-avatars.com/api/?name=' . preg_replace('/\s+/', '+', $fullName) . '&size=512';
 
             $developer = Developer::create([
-                'full_name' => $full_name,
+                'full_name' => $fullName,
                 'username' => strtolower($request['username']),
                 'email' => $request['email'],
-                'profile_picture' => $profile_picture,
+                'profile_picture' => $profilePicture,
                 'password' => Hash::make($request['password']),
                 'api_key' => Hash('SHA256', Str::random(100)),
                 'api_token' => Hash('SHA256', Str::random(100))
