@@ -33,7 +33,9 @@ class Point extends Model
                 return "Memfavoritkan film $filmTitle ($filmYear).";
                 break;
             case 'REVIEW':
-                $film = Film::select('title', 'release_date')->where('tmdb_id', $this->type_id)->first();
+                $review = Review::select('tmdb_id')->where('id', $this->type_id)->first();
+                $filmID = $review['tmdb_id'];
+                $film = Film::select('title', 'release_date')->where('tmdb_id', $filmID)->first();
                 $filmTitle = $film['title'];
                 $filmYear = substr($film['release_date'], 0, 4);
                 return "Mengulas film $filmTitle ($filmYear).";

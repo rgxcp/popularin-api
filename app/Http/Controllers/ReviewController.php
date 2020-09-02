@@ -196,7 +196,7 @@ class ReviewController extends Controller
                 $this->addFilm($tmdbID);
             }
 
-            Review::create([
+            $review = Review::create([
                 'user_id' => $authID,
                 'tmdb_id' => $tmdbID,
                 'rating' => $request['rating'],
@@ -216,7 +216,7 @@ class ReviewController extends Controller
                 $watchlist->delete();
             }
 
-            $this->addPoint($authID, $tmdbID, 30, 'REVIEW');
+            $this->addPoint($authID, $review->id, 30, 'REVIEW');
 
             return response()->json([
                 'status' => 202,
