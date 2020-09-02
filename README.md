@@ -12,9 +12,10 @@
 1. Clone this repository to your desired location.
 2. Create database and configure it on `.env` file.
 3. Run migration `php artisan migrate`.
-4. Run server `php -S localhost:8000 -t public`.
-5. Fire-up Postman.
-6. Do-what-you-want-with-it!
+4. Run seeder `php artisan db:seed`.
+5. Run server `php -S localhost:8000 -t public`.
+6. Fire-up Postman.
+7. Do-what-you-want-with-it!
 
 ## Changelog
 ### 1.1.0 (Ongoing)
