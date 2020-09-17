@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('profile_picture');
             $table->string('password');
-            $table->string('api_token', 64)->unique()->nullable();
+            $table->string('api_token', 64)->unique();
             $table->timestamps();
             $table->softDeletes();
         });
