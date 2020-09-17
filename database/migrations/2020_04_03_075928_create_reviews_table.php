@@ -17,7 +17,7 @@ class CreateReviewsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('tmdb_id');
-            $table->double('rating');
+            $table->double('rating')->unsigned();
             $table->longText('review_detail');
             $table->date('review_date');
             $table->date('watch_date');
