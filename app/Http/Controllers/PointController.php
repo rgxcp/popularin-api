@@ -7,11 +7,11 @@ use Illuminate\Support\Carbon;
 
 class PointController extends Controller
 {
-    public function showsPointActivity($userID)
+    public function showsPointActivity($user_id)
     {
         Carbon::setLocale('id');
 
-        $pointActivities = Point::where('user_id', $userID)
+        $pointActivities = Point::where('user_id', $user_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

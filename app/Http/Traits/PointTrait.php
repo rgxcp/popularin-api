@@ -6,11 +6,11 @@ use App\Point;
 
 trait PointTrait
 {
-    public function addPoint($userID, $typeID, $total, $type)
+    public function addPoint($user_id, $type_id, $total, $type)
     {
         Point::create([
-            'user_id' => $userID,
-            'type_id' => $typeID,
+            'user_id' => $user_id,
+            'type_id' => $type_id,
             'total' => $total,
             'type' => $type
         ]);

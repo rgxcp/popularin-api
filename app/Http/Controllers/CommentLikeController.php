@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class CommentLikeController extends Controller
 {
-    public function showsCommentLikeFromAll($commentID)
+    public function showsCommentLikeFromAll($comment_id)
     {
         $commentLikes = CommentLike::with([
             'user'
-        ])->where('comment_id', $commentID)
+        ])->where('comment_id', $comment_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -24,13 +24,13 @@ class CommentLikeController extends Controller
         ]);
     }
 
-    public function showsCommentLikeFromFollowing($commentID)
+    public function showsCommentLikeFromFollowing($comment_id)
     {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $commentLikes = CommentLike::with([
             'user'
-        ])->where('comment_id', $commentID)
+        ])->where('comment_id', $comment_id)
             ->whereIn('user_id', $followings)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -42,15 +42,15 @@ class CommentLikeController extends Controller
         ]);
     }
 
-    public function create($commentID)
+    public function create($comment_id)
     {
-        Comment::findOrFail($commentID);
+        Comment::findOrFail($comment_id);
 
         $authID = Auth::id();
 
         $isLiked = CommentLike::where([
             'user_id' => $authID,
-            'comment_id' => $commentID
+            'comment_id' => $comment_id
         ])->exists();
 
         if ($isLiked) {
@@ -61,7 +61,7 @@ class CommentLikeController extends Controller
         } else {
             CommentLike::create([
                 'user_id' => $authID,
-                'comment_id' => $commentID
+                'comment_id' => $comment_id
             ]);
 
             return response()->json([
@@ -71,11 +71,11 @@ class CommentLikeController extends Controller
         }
     }
 
-    public function delete($commentID)
+    public function delete($comment_id)
     {
         CommentLike::where([
             'user_id' => Auth::id(),
-            'comment_id' => $commentID
+            'comment_id' => $comment_id
         ])->firstOrFail()
             ->delete();
 

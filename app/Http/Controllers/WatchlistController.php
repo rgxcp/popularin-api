@@ -15,11 +15,11 @@ class WatchlistController extends Controller
     use FilmTrait;
     use PointTrait;
 
-    public function showsFilmWatchlistFromAll($tmdbID)
+    public function showsFilmWatchlistFromAll($tmdb_id)
     {
         $watchlists = Watchlist::with([
             'user'
-        ])->where('tmdb_id', $tmdbID)
+        ])->where('tmdb_id', $tmdb_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -30,13 +30,13 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showsFilmWatchlistFromFollowing($tmdbID)
+    public function showsFilmWatchlistFromFollowing($tmdb_id)
     {
         $followings = Following::select('following_id')->where('user_id', Auth::id());
 
         $watchlists = Watchlist::with([
             'user'
-        ])->where('tmdb_id', $tmdbID)
+        ])->where('tmdb_id', $tmdb_id)
             ->whereIn('user_id', $followings)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -48,11 +48,11 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function showsUserWatchlist($userID)
+    public function showsUserWatchlist($user_id)
     {
         $watchlists = Watchlist::with([
             'film'
-        ])->where('user_id', $userID)
+        ])->where('user_id', $user_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -63,13 +63,13 @@ class WatchlistController extends Controller
         ]);
     }
 
-    public function create($tmdbID)
+    public function create($tmdb_id)
     {
         $authID = Auth::id();
 
         $inWatchlist = Watchlist::where([
             'user_id' => $authID,
-            'tmdb_id' => $tmdbID
+            'tmdb_id' => $tmdb_id
         ])->exists();
 
         if ($inWatchlist) {
@@ -78,25 +78,25 @@ class WatchlistController extends Controller
                 'message' => 'Already Watchlisted'
             ]);
         } else {
-            $filmExist = Film::where('tmdb_id', $tmdbID)->exists();
+            $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
 
             if (!$filmExist) {
-                $this->addFilm($tmdbID);
+                $this->addFilm($tmdb_id);
             }
 
             Watchlist::create([
                 'user_id' => $authID,
-                'tmdb_id' => $tmdbID
+                'tmdb_id' => $tmdb_id
             ]);
 
             $pointExist = Point::where([
                 'user_id' => $authID,
-                'type_id' => $tmdbID,
+                'type_id' => $tmdb_id,
                 'type' => 'WATCHLIST'
             ])->exists();
 
             if (!$pointExist) {
-                $this->addPoint($authID, $tmdbID, 5, 'WATCHLIST');
+                $this->addPoint($authID, $tmdb_id, 5, 'WATCHLIST');
             }
 
             return response()->json([
@@ -106,11 +106,11 @@ class WatchlistController extends Controller
         }
     }
 
-    public function delete($tmdbID)
+    public function delete($tmdb_id)
     {
         Watchlist::where([
             'user_id' => Auth::id(),
-            'tmdb_id' => $tmdbID
+            'tmdb_id' => $tmdb_id
         ])->firstOrFail()
             ->delete();
 

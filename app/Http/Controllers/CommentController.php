@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
-    public function shows($reviewID)
+    public function shows($review_id)
     {
         Carbon::setLocale('id');
 
         $comments = Comment::with([
             'user'
-        ])->where('review_id', $reviewID)
+        ])->where('review_id', $review_id)
             ->orderBy('created_at', 'asc')
             ->paginate(20);
 
@@ -47,13 +47,13 @@ class CommentController extends Controller
                 'result' => $validator->errors()->all()
             ]);
         } else {
-            $reviewID = $request['review_id'];
+            $review_id = $request['review_id'];
 
-            Review::findOrFail($reviewID);
+            Review::findOrFail($review_id);
 
             $comment = Comment::create([
                 'user_id' => Auth::id(),
-                'review_id' => $reviewID,
+                'review_id' => $review_id,
                 'comment_detail' => $request['comment_detail'],
                 'comment_date' => Carbon::now('+07:00')->format('Y-m-d')
             ]);

@@ -20,13 +20,13 @@ class ReviewController extends Controller
     use FilmTrait;
     use PointTrait;
 
-    public function showsFilmReviewFromAll($tmdbID)
+    public function showsFilmReviewFromAll($tmdb_id)
     {
         Carbon::setLocale('id');
 
         $reviews = Review::with([
             'user'
-        ])->where('tmdb_id', $tmdbID)
+        ])->where('tmdb_id', $tmdb_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -37,7 +37,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showsFilmReviewFromFollowing($tmdbID)
+    public function showsFilmReviewFromFollowing($tmdb_id)
     {
         Carbon::setLocale('id');
 
@@ -45,7 +45,7 @@ class ReviewController extends Controller
 
         $reviews = Review::with([
             'user'
-        ])->where('tmdb_id', $tmdbID)
+        ])->where('tmdb_id', $tmdb_id)
             ->whereIn('user_id', $followings)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -57,7 +57,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showsLikedReview($tmdbID)
+    public function showsLikedReview($tmdb_id)
     {
         Carbon::setLocale('id');
 
@@ -65,7 +65,7 @@ class ReviewController extends Controller
 
         $reviews = Review::with([
             'user'
-        ])->where('tmdb_id', $tmdbID)
+        ])->where('tmdb_id', $tmdb_id)
             ->whereIn('id', $reviewLikes)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -77,7 +77,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showsSelfReview($tmdbID)
+    public function showsSelfReview($tmdb_id)
     {
         Carbon::setLocale('id');
 
@@ -85,7 +85,7 @@ class ReviewController extends Controller
             'user'
         ])->where([
             'user_id' => Auth::id(),
-            'tmdb_id' => $tmdbID
+            'tmdb_id' => $tmdb_id
         ])->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -96,13 +96,13 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function showsUserReview($userID)
+    public function showsUserReview($user_id)
     {
         Carbon::setLocale('id');
 
         $reviews = Review::with([
             'film'
-        ])->where('user_id', $userID)
+        ])->where('user_id', $user_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -188,17 +188,17 @@ class ReviewController extends Controller
         } else {
             $authID = Auth::id();
 
-            $tmdbID = $request['tmdb_id'];
+            $tmdb_id = $request['tmdb_id'];
 
-            $filmExist = Film::where('tmdb_id', $tmdbID)->exists();
+            $filmExist = Film::where('tmdb_id', $tmdb_id)->exists();
 
             if (!$filmExist) {
-                $this->addFilm($tmdbID);
+                $this->addFilm($tmdb_id);
             }
 
             $review = Review::create([
                 'user_id' => $authID,
-                'tmdb_id' => $tmdbID,
+                'tmdb_id' => $tmdb_id,
                 'rating' => $request['rating'],
                 'review_detail' => $request['review_detail'],
                 'review_date' => Carbon::now('+07:00')->format('Y-m-d'),
@@ -207,7 +207,7 @@ class ReviewController extends Controller
 
             $watchlist = Watchlist::where([
                 'user_id' => $authID,
-                'tmdb_id' => $tmdbID
+                'tmdb_id' => $tmdb_id
             ]);
 
             $inWatchlist = $watchlist->exists();
