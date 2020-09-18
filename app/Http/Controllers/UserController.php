@@ -69,6 +69,7 @@ class UserController extends Controller
 
         $metadata = collect([
             'joined_since' => $user->created_at->diffForHumans(),
+            'is_self' => $id == $authID,
             'is_following' => Following::where(['user_id' => $authID, 'following_id' => $id])->exists(),
             'is_follower' => Following::where(['user_id' => $id, 'following_id' => $authID])->exists(),
             'total_point' => $totalPoint,

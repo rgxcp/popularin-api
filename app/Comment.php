@@ -27,6 +27,7 @@ class Comment extends Model
     ];
 
     protected $appends = [
+        'is_self',
         'timestamp'
     ];
 
@@ -38,6 +39,13 @@ class Comment extends Model
     public function getUserAttribute()
     {
         return Auth::user();
+    }
+
+    public function getIsSelfAttribute()
+    {
+        $authID = Auth::check() ? Auth::id() : 0;
+
+        return $this->user_id == $authID;
     }
 
     public function getTimestampAttribute()
