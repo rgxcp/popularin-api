@@ -3,10 +3,14 @@
 
 **ID**: API untuk Popularin - Sosial media film Indonesia.
 
+## Status
+MAINTAINING
+
 ## Requirements
 1. Composer
 2. Lumen
 3. XAMPP
+4. Postman
 
 ## How to Use
 1. Clone this repository to your desired location.
