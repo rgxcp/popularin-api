@@ -51,7 +51,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $totalPoint = Point::where('user_id', $id)->sum('total');
-        $totalPoint = $totalPoint < 0 ? $totalPoint : "+$totalPoint";
+        $isPointPositive = $totalPoint > 0;
 
         $recentFavorites = Favorite::with([
             'film'
@@ -72,7 +72,8 @@ class UserController extends Controller
             'is_self' => $id == $authID,
             'is_following' => Following::where(['user_id' => $authID, 'following_id' => $id])->exists(),
             'is_follower' => Following::where(['user_id' => $id, 'following_id' => $authID])->exists(),
-            'total_point' => $totalPoint,
+            'is_point_positive' => $isPointPositive,
+            'total_point' => $isPointPositive ? "+$totalPoint" : $totalPoint,
             'total_following' => Following::where('user_id', $id)->count(),
             'total_follower' => Following::where('following_id', $id)->count(),
             'total_favorite' => Favorite::where('user_id', $id)->count(),

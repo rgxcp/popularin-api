@@ -17,9 +17,15 @@ class Point extends Model
     ];
 
     public $appends = [
+        'is_positive',
         'description',
         'timestamp'
     ];
+
+    public function getIsPositiveAttribute()
+    {
+        return $this->total > 0;
+    }
 
     public function getDescriptionAttribute()
     {
