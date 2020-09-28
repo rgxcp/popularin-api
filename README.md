@@ -135,5 +135,7 @@ MAINTAINING
 - Adding like comment feature
 - Adding point feature
 - Showing total point on user detail
+- Adding is_commented attribute
+- Adding is_positive & is_point_positive attribute
 ### 1.0.0
 - Firing up initial version of Popularin API!
