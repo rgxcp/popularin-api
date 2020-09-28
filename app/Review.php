@@ -25,6 +25,7 @@ class Review extends Model
     public $appends = [
         'timestamp',
         'is_liked',
+        'is_commented',
         'total_comment',
         'total_like'
     ];
@@ -49,6 +50,13 @@ class Review extends Model
         $authID = Auth::check() ? Auth::id() : 0;
 
         return ReviewLike::where(['user_id' => $authID, 'review_id' => $this->id])->exists();
+    }
+
+    public function getIsCommentedAttribute()
+    {
+        $authID = Auth::check() ? Auth::id() : 0;
+
+        return Comment::where(['user_id' => $authID, 'review_id' => $this->id])->exists();
     }
 
     public function getTotalCommentAttribute()
