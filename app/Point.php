@@ -22,6 +22,11 @@ class Point extends Model
         'timestamp'
     ];
 
+    public function getTotalAttribute($total)
+    {
+        return $total > 0 ? "+$total" : $total;
+    }
+
     public function getIsPositiveAttribute()
     {
         return $this->total > 0;
