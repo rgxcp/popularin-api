@@ -22,6 +22,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->post('comment/{comment_id}/like', 'CommentLikeController@create');
         $router->delete('comment/{comment_id}/unlike', 'CommentLikeController@delete');
 
+        // Comment Report
+        $router->get('comment/{comment_id}/reports', 'CommentReportController@index');
+        $router->post('comment/{comment_id}/reports', 'CommentReportController@store');
+
         // Favorite
         $router->get('film/{tmdb_id}/favorites/from/following', 'FavoriteController@showsFilmFavoriteFromFollowing');
         $router->post('film/{tmdb_id}/favorite', 'FavoriteController@create');
@@ -48,6 +52,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->get('review/{review_id}/likes/from/following', 'ReviewLikeController@showsReviewLikeFromFollowing');
         $router->post('review/{review_id}/like', 'ReviewLikeController@create');
         $router->delete('review/{review_id}/unlike', 'ReviewLikeController@delete');
+
+        // Review Report
+        $router->get('review/{review_id}/reports', 'ReviewReportController@index');
+        $router->post('review/{review_id}/reports', 'ReviewReportController@store');
 
         // User
         $router->get('user/self', 'UserController@showSelf');
