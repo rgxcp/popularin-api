@@ -29,7 +29,7 @@ class CommentReportController extends Controller
 
     public function store(Request $request, $comment_id)
     {
-        $comment = Comment::withCount('commentReports')->findOrFail($comment_id);
+        $comment = Comment::findOrFail($comment_id);
 
         $authID = Auth::id();
 
@@ -45,7 +45,7 @@ class CommentReportController extends Controller
                 'report_category_id' => $request['report_category_id']
             ]);
 
-            if ($comment['comment_reports_count'] + 1 == env('NSFW_THRESHOLD')) {
+            if ($comment['total_report'] == env('NSFW_THRESHOLD')) {
                 $comment->delete();
             }
 

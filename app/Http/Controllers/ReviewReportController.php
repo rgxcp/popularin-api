@@ -29,7 +29,7 @@ class ReviewReportController extends Controller
 
     public function store(Request $request, $review_id)
     {
-        $review = Review::withCount('reviewReports')->findOrFail($review_id);
+        $review = Review::findOrFail($review_id);
 
         $authID = Auth::id();
 
@@ -45,7 +45,7 @@ class ReviewReportController extends Controller
                 'report_category_id' => $request['report_category_id']
             ]);
 
-            if ($review['review_reports_count'] + 1 == env('NSFW_THRESHOLD')) {
+            if ($review['total_report'] == env('NSFW_THRESHOLD')) {
                 $review->delete();
             }
 
