@@ -27,6 +27,7 @@ class DeveloperController extends Controller
             656 => 'Already Followed',
             666 => 'Already Liked',
             676 => 'Already Watchlisted',
+            686 => 'Can\'t Report Self',
             919 => 'Unauthenticated Developer',
             929 => 'Unauthenticated User',
             939 => 'Unauthorized'
