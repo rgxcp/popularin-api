@@ -31,8 +31,8 @@ MAINTAINING
    `/api/comment/{comment_id}/likes/from/all`  
 - Get users who liked a comment from following  
    `/api/comment/{comment_id}/likes/from/following`  
-- Get users who reported a comment
-   `/api/comment/{comment_id}/reports`
+- Get users who reported a comment  
+   `/api/comment/{comment_id}/reports`  
 - Get users who favorited a film from everyone  
    `/api/film/{tmdb_id}/favorites/from/all`  
 - Get users who favorited a film from following  
@@ -71,8 +71,8 @@ MAINTAINING
    `/api/review/{review_id}/likes/from/all`  
 - Get users who liked a review from following  
    `/api/review/{review_id}/likes/from/following`  
-- Get users who reported a review
-   `/api/review/{review_id}/reports`
+- Get users who reported a review  
+   `/api/review/{review_id}/reports`  
 - Get specific users  
    `/api/user/search/{query}`  
 - Get user detail  
@@ -97,8 +97,8 @@ MAINTAINING
    `/api/comment`  
 - Like comment  
    `/api/comment/{comment_id}/like`  
-- Report comment
-   `/api/comment/{comment_id}/reports`
+- Report comment  
+   `/api/comment/{comment_id}/reports`  
 - Add film to favorite  
    `/api/film/{tmdb_id}/favorite`  
 - Follow user  
@@ -107,8 +107,8 @@ MAINTAINING
    `/api/review`  
 - Like review  
    `/api/review/{review_id}/like`  
-- Report review
-   `/api/review/{review_id}/reports`
+- Report review  
+   `/api/review/{review_id}/reports`  
 - Add film to watchlist  
    `/api/film/{tmdb_id}/watchlist`  
 - Sign up developer  
