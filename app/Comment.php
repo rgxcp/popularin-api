@@ -28,7 +28,9 @@ class Comment extends Model
 
     protected $appends = [
         'is_self',
-        'timestamp'
+        'timestamp',
+        'total_report',
+        'is_nsfw'
     ];
 
     public function user()
@@ -51,5 +53,15 @@ class Comment extends Model
     public function getTimestampAttribute()
     {
         return $this->created_at->diffForHumans();
+    }
+
+    public function getTotalReportAttribute()
+    {
+        return CommentReport::where('comment_id', $this->id)->count();
+    }
+
+    public function getIsNSFWAttribute()
+    {
+        return $this->total_report >= env('SFW_THRESHOLD');
     }
 }

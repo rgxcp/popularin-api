@@ -27,7 +27,9 @@ class Review extends Model
         'is_liked',
         'is_commented',
         'total_comment',
-        'total_like'
+        'total_like',
+        'total_report',
+        'is_nsfw'
     ];
 
     public function film()
@@ -67,5 +69,15 @@ class Review extends Model
     public function getTotalLikeAttribute()
     {
         return ReviewLike::where('review_id', $this->id)->count();
+    }
+
+    public function getTotalReportAttribute()
+    {
+        return ReviewReport::where('review_id', $this->id)->count();
+    }
+
+    public function getIsNSFWAttribute()
+    {
+        return $this->total_report >= env('SFW_THRESHOLD');
     }
 }
