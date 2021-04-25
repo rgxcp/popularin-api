@@ -17,7 +17,7 @@ class ReviewReportController extends Controller
         $reviewReports = ReviewReport::with([
             'reportCategory', 'user'
         ])->where('review_id', $review_id)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         return response()->json([
