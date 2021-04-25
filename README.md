@@ -139,7 +139,7 @@ MAINTAINING
    `/api/film/{tmdb_id}/unwatchlist`  
 
 ## Changelog
-### 1.2.0
+### 1.2.0 (Ongoing)
 - Adding comment & review report feature
 ### 1.1.0
 - Adding like comment feature

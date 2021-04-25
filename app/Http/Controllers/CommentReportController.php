@@ -17,7 +17,7 @@ class CommentReportController extends Controller
         $commentReports = CommentReport::with([
             'reportCategory', 'user'
         ])->where('comment_id', $comment_id)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->paginate(20);
 
         return response()->json([
