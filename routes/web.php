@@ -23,7 +23,6 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->delete('comment/{comment_id}/unlike', 'CommentLikeController@delete');
 
         // Comment Report
-        $router->get('comment/{comment_id}/reports', 'CommentReportController@index');
         $router->post('comment/{comment_id}/reports', 'CommentReportController@store');
 
         // Favorite
@@ -54,7 +53,6 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
         $router->delete('review/{review_id}/unlike', 'ReviewLikeController@delete');
 
         // Review Report
-        $router->get('review/{review_id}/reports', 'ReviewReportController@index');
         $router->post('review/{review_id}/reports', 'ReviewReportController@store');
 
         // User
@@ -79,6 +77,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
     // Comment Like
     $router->get('comment/{comment_id}/likes/from/all', 'CommentLikeController@showsCommentLikeFromAll');
 
+    // Comment Report
+    $router->get('comment/{comment_id}/reports', 'CommentReportController@index');
+
     // Favorite
     $router->get('film/{tmdb_id}/favorites/from/all', 'FavoriteController@showsFilmFavoriteFromAll');
     $router->get('user/{user_id}/favorites', 'FavoriteController@showsUserFavorite');
@@ -101,6 +102,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'is_developer'], function () 
 
     // Review Like
     $router->get('review/{review_id}/likes/from/all', 'ReviewLikeController@showsReviewLikeFromAll');
+
+    // Review Report
+    $router->get('review/{review_id}/reports', 'ReviewReportController@index');
 
     // User
     $router->get('user/search/{query}', 'UserController@search');
