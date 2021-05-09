@@ -22,7 +22,7 @@ class Review extends Model
         'deleted_at'
     ];
 
-    public $appends = [
+    protected $appends = [
         'timestamp',
         'is_liked',
         'is_commented',

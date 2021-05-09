@@ -16,7 +16,7 @@ class Point extends Model
         'updated_at'
     ];
 
-    public $appends = [
+    protected $appends = [
         'is_positive',
         'description',
         'timestamp'
