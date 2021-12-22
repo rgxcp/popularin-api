@@ -1,7 +1,5 @@
-# 💡 PHP - Lumen - Popularin API
-**EN**: API for Popularin - Indonesian film social media.
-
-**ID**: API untuk Popularin - Sosial media film Indonesia.
+# 💡 Popularin API
+API for Popularin - Indonesian film social media.
 
 ## Status
 MAINTAINING
